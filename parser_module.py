@@ -37,35 +37,36 @@ class Parse:
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
         return text_tokens_without_stopwords
 
-    # def handle_urls(self, doc):
-    #     """
-    #     This function processes a doc_list, replaces shortened urls with full ones and tokenize them
-    #     :param doc: raw doc_list from file reader
-    #     :return: clean doc_list without unhandled URLs
-    #     """
-    #     full_text = doc[2].split(' ')
-    #     url = doc[3]
-    #     url_indices = doc[4]
-    #     quote_text = []
-    #     quote_url = {}
-    #     quote_url_indices = []
-    #     if doc[8]:
-    #         quote_text = doc[8].split(' ')
-    #         quote_url = doc[9]
-    #         quote_url_indices = doc[10]
-    #     new_text = []
-    #
-    #     for token in full_text:
-    #         new_token = token
-    #         if "http" in token and token in url:
-    #             url_split = url.find("\":\"")
-    #             long_url = url[url_split+3:]
-    #             long_url = long_url[:len(long_url)-2]
-    #             new_token = long_url
-    #         new_text.append(new_token)
-    #
-    #     print(new_text)
-    #     return ""
+    def parse_hashtags(self, text): #problems: USE will translate to  u,s,a and all so
+        list_of_hashtags = []
+        new_full_text = ""
+        tokens_array = text.split(' ')
+        for token in tokens_array:
+            pos = token.find('#')
+            if pos >= 0:
+                hashtag = token[pos:len(token)]
+                if hashtag.find("...https") > 0:
+                    new_full_text = new_full_text + " " + hashtag[hashtag.find("...https"):]
+                    hashtag = hashtag[0:hashtag.find("...https")]
+                # option for two hashtags in a row
+                list = []
+                list.append(hashtag)
+                for str in list:
+                    list_of_hashtags.append(str.lower())
+                    i = 2
+                    pos = 1
+                    while i <= len(str):
+                        if i == len(str) or str[i].isupper() or str[i] == "_":
+                            list_of_hashtags.append(str[pos:i].lower())
+                            if i == len(str) or str[i].isupper():
+                                pos = i
+                            else:
+                                pos = i+1
+                        i += 1
+            else:
+                new_full_text = new_full_text + " " + token
+        return list_of_hashtags, new_full_text
+
 
     def parse_doc(self, doc_as_list):
         """
@@ -73,7 +74,6 @@ class Parse:
         :param doc_as_list: list re-preseting the tweet.
         :return: Document object with corresponding fields.
         """
-        # self.handle_urls(doc_as_list)
         tweet_id = doc_as_list[0]
         tweet_date = doc_as_list[1]
         full_text = remove_urls(doc_as_list[2])
@@ -89,9 +89,8 @@ class Parse:
         retweet_quoted_url = expand_url(doc_as_list[12])
         # retweet_quoted_url_indices = doc_as_list[13]
         term_dict = {}
-
         tokenized_text = self.parse_sentence(full_text)
-        tokenized_urls = self.parse_sentence(url)
+        x, y = tokenized = self.parse_hashtags(full_text)
 
         doc_length = len(tokenized_text)  # after text operations.
 
