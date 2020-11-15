@@ -17,7 +17,6 @@ def run_engine():
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse()
     indexer = Indexer(config)
-
     #documents_list = r.read_file(file_name='sample3.parquet')
     documents_list = r.read_file(file_name='covid19_07-08.snappy.parquet')
 
