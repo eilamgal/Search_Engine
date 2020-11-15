@@ -46,7 +46,6 @@ def parse_number(num, suffix):
     if suffix.find('/') > 0:
         return str(num) + " " + suffix, True
     ch = ""
-    flag = False
     num, flag = get_suffix(num, suffix)
     if 1000 <= num < 1000000:
         num /= 1000
