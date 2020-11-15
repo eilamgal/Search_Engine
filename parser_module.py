@@ -23,8 +23,54 @@ def tokenize_url(url):
     return tokenized_url
 
 
-def parse_number(number, param):
-    pass
+def parse_hashtags(hashtag):  # problems: USE will translate to  u,s,a and all so
+    list_of_hashtags = []
+    if hashtag.find(".") > 0:
+        hashtag = hashtag[0:hashtag.find(".")]
+    list_of_hashtags.append(hashtag.lower())
+    i = 2
+    j = 1
+    while i <= len(hashtag):
+        if i == len(hashtag) or hashtag[i].isupper() or hashtag[i] == "_":
+            list_of_hashtags.append(hashtag[j:i].lower())
+            if i == len(hashtag) or hashtag[i].isupper():
+                j = i
+            else:
+                j = i + 1
+        i += 1
+    return list_of_hashtags
+
+
+def parse_number(num, suffix):
+    num = float(num)
+    if suffix.find('/') > 0:
+        return str(num) + " " + suffix
+    ch = ""
+    num = get_suffix(num, suffix)
+    if 1000 <= num < 1000000:
+        num /= 1000
+        ch = "K"
+    elif 1000000 <= num < 1000000000:
+        num /= 1000000
+        ch = "M"
+    elif num >= 1000000000:
+        num /= 1000000000
+        ch = "B"
+    if num.is_integer():
+        num = int(num)
+    else:
+        num = round(num, 3)
+    return str(num) + ch
+
+
+def get_suffix(num, suffix):
+    if suffix == "Thousand":
+        num *= 1000
+    elif suffix == "Million":
+        num *= 1000000
+    elif suffix == "Billion":
+        num *= 1000000000
+    return num
 
 
 class Parse:
@@ -41,36 +87,6 @@ class Parse:
         text_tokens = word_tokenize(text)
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
         return text_tokens_without_stopwords
-
-    def parse_hashtags(self, text):  # problems: USE will translate to  u,s,a and all so
-        list_of_hashtags = []
-        new_full_text = ""
-        tokens_array = text.split(' ')
-        for token in tokens_array:
-            pos = token.find('#')
-            if pos >= 0:
-                hashtag = token[pos:len(token)]
-                if hashtag.find("...https") > 0:
-                    new_full_text = new_full_text + " " + hashtag[hashtag.find("...https"):]
-                    hashtag = hashtag[0:hashtag.find("...https")]
-                # option for two hashtags in a row
-                list = []
-                list.append(hashtag)
-                for str in list:
-                    list_of_hashtags.append(str.lower())
-                    i = 2
-                    pos = 1
-                    while i <= len(str):
-                        if i == len(str) or str[i].isupper() or str[i] == "_":
-                            list_of_hashtags.append(str[pos:i].lower())
-                            if i == len(str) or str[i].isupper():
-                                pos = i
-                            else:
-                                pos = i + 1
-                        i += 1
-            else:
-                new_full_text = new_full_text + " " + token
-        return list_of_hashtags, new_full_text
 
     def parse_doc(self, doc_as_list):
         """
@@ -114,8 +130,8 @@ class Parse:
         tokenized_text.append(retweet_url_tokens)
         tokenized_text.append(quote_url_tokens)
 
+        tokenized_text = self.parse_sentence(full_text)
         doc_length = len(tokenized_text)  # after text operations.
-
         for term in tokenized_text:
             if term not in term_dict.keys():
                 term_dict[term] = 1
