@@ -85,7 +85,7 @@ class Parse:
         :return:
         """
         text_tokens = word_tokenize(text)
-        text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
+        text_tokens_without_stopwords = [w.lower() if w[0].islower() else w.upper() for w in text_tokens if w not in self.stop_words]
         return text_tokens_without_stopwords
 
     def parse_doc(self, doc_as_list):
@@ -114,23 +114,28 @@ class Parse:
         full_text = preprocessed[0]
         tokenized_text = preprocessed[1]
 
-        preprocessed = self.pre_process(retweet_text)
-        retweet_text = preprocessed[0]
-        tokenized_text.append(preprocessed[1])
+        # if retweet_text:
+        #     preprocessed = self.pre_process(retweet_text)
+        #     retweet_text = preprocessed[0]
+        #     tokenized_text.extend(preprocessed[1])
 
-        preprocessed = self.pre_process(quote_text)
-        quote_text = preprocessed[0]
-        tokenized_text.append(preprocessed[1])
+        if quote_text:
+            preprocessed = self.pre_process(quote_text)
+            quote_text = preprocessed[0]
+            tokenized_text.extend(preprocessed[1])
 
-        tokenized_text.append(self.parse_sentence(full_text))
-        tokenized_text.append(self.parse_sentence(retweet_text))
-        tokenized_text.append(self.parse_sentence(quote_text))
+        tokenized_text.extend(self.parse_sentence(full_text))
+        # tokenized_text.extend(self.parse_sentence(retweet_text))
+        if quote_text:
+            tokenized_text.extend(self.parse_sentence(quote_text))
 
-        tokenized_text.append(url_tokens)
-        tokenized_text.append(retweet_url_tokens)
-        tokenized_text.append(quote_url_tokens)
+        if url_tokens:
+            tokenized_text.extend(url_tokens)
+        if retweet_url_tokens:
+            tokenized_text.extend(retweet_url_tokens)
+        if quote_url_tokens:
+            tokenized_text.extend(quote_url_tokens)
 
-        tokenized_text = self.parse_sentence(full_text)
         doc_length = len(tokenized_text)  # after text operations.
         for term in tokenized_text:
             if term not in term_dict.keys():
@@ -158,14 +163,14 @@ class Parse:
 
                 # TAGS
                 elif token[0] == '@':
-                    tokens_list.append(token)
+                    tokens_list.append(token if not token.endswith(':') else token[:len(token)-1])
 
                 # PERCENTAGES
                 elif i < len(split) - 1 and split[i + 1] == "percent":
                     number = float(token)
-                    if token.isnumeric():
+                    if token.isnumeric():  # token is a round number
                         tokens_list.append(token + "%")
-                    else:
+                    else:  # token is a float number
                         tokens_list.append(str(number) + "%")
                 elif token.endswith('%'):
                     number = float(token[:token.find('%')])
@@ -175,9 +180,15 @@ class Parse:
                 elif token.replace(',', '').replace('.', '').isnumeric():
                     number = token.replace(',', '')
                     if i < len(split) - 1:
-                        tokens_list.append(parse_number(number, split[i + 1]))
+                        next_token_used, number = parse_number(number, split[i + 1])
+                        tokens_list.append(number)
+                        if next_token_used:
+                            i += 1
                     else:
                         tokens_list.append(parse_number(number, ""))
+
+                elif "http" in token.lower():
+                    continue
                 # ALL THE REST - REGULAR TOKENS
                 else:
                     clean_text.append(token)
