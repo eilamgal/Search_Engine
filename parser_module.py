@@ -44,9 +44,10 @@ def parse_hashtags(hashtag):  # problems: USE will translate to  u,s,a and all s
 def parse_number(num, suffix):
     num = float(num)
     if suffix.find('/') > 0:
-        return str(num) + " " + suffix
+        return str(num) + " " + suffix, True
     ch = ""
-    num = get_suffix(num, suffix)
+    flag = False
+    num, flag = get_suffix(num, suffix)
     if 1000 <= num < 1000000:
         num /= 1000
         ch = "K"
@@ -60,17 +61,21 @@ def parse_number(num, suffix):
         num = int(num)
     else:
         num = round(num, 3)
-    return str(num) + ch
+    return str(num) + ch, flag
 
 
 def get_suffix(num, suffix):
+    flag = False
     if suffix == "Thousand":
         num *= 1000
+        flag = True
     elif suffix == "Million":
         num *= 1000000
+        flag = True
     elif suffix == "Billion":
         num *= 1000000000
-    return num
+        flag = True
+    return num, flag
 
 
 class Parse:
