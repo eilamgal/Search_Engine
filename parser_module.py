@@ -23,7 +23,7 @@ def tokenize_url(url):
     return tokenized_url
 
 
-def parse_hashtags(hashtag):  # problems: USE will translate to  u,s,a and all so
+def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
     list_of_hashtags = []
     if hashtag.find(".") > 0:
         hashtag = hashtag[0:hashtag.find(".")]
