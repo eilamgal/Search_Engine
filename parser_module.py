@@ -187,8 +187,8 @@ class Parse:
             except:
                 clean_text += token + " "
 
-        tokenizer = word_tokenize(clean_text)
-        tokenizer2 = clean_text.split(' ')
+        # tokenizer = word_tokenize(clean_text)
+        # tokenizer2 = clean_text.split(' ')
 
         # tokens_list.extend(word_tokenize(clean_text))
         tokens_list.extend(clean_text.split(' '))
