@@ -87,13 +87,14 @@ class Parse:
 
     def parse_sentence(self, text):
         """
-        This function tokenize, remove stop words and apply lower case for every word within the text
+        This function tokenizes a string, and remove stop words
         :param text:
         :return:
         """
         text_tokens = word_tokenize(text)
-        text_tokens_without_stopwords = [w.lower() if w[0].islower() else w.upper() for w in text_tokens if w not in self.stop_words]
-        return text_tokens_without_stopwords
+        text_tokens_without_stopwords = [w.lower() if w[0].islower() else w.upper()
+                                         for w in text_tokens if w not in self.stop_words]
+        return text_tokens
 
     def parse_doc(self, doc_as_list):
         """
@@ -120,9 +121,9 @@ class Parse:
         # retweet_quoted_url_indices = doc_as_list[13]
         term_dict = {}
 
-        preprocessed = self.pre_process(full_text)
-        full_text = preprocessed[0]
-        tokenized_text = preprocessed[1]
+        # preprocessed = self.pre_process(full_text)
+        # full_text = preprocessed[0]
+        tokenized_text = self.pre_process(full_text)
 
         # if retweet_text:
         #     preprocessed = self.pre_process(retweet_text)
@@ -130,14 +131,15 @@ class Parse:
         #     tokenized_text.extend(preprocessed[1])
 
         if quote_text:
-            preprocessed = self.pre_process(quote_text)
-            quote_text = preprocessed[0]
-            tokenized_text.extend(preprocessed[1])
+            # preprocessed = self.pre_process(quote_text)
+            # quote_text = preprocessed[0]
+            tokenized_text.extend(self.pre_process(quote_text))
 
-        tokenized_text.extend(self.parse_sentence(full_text))
+        # tokenized_text.extend(self.parse_sentence(full_text))
         # tokenized_text.extend(self.parse_sentence(retweet_text))
-        if quote_text:
-            tokenized_text.extend(self.parse_sentence(quote_text))
+
+        # if quote_text:
+        #     tokenized_text.extend(self.parse_sentence(quote_text))
 
         if url_tokens:
             tokenized_text.extend(url_tokens)
@@ -148,6 +150,8 @@ class Parse:
 
         doc_length = len(tokenized_text)  # after text operations.
         for term in tokenized_text:
+            if len(term) == 0:
+                continue
             if term not in term_dict.keys():
                 term_dict[term] = 1
             else:
@@ -162,14 +166,16 @@ class Parse:
         if not text:
             return
         tokens_list = []
-        clean_text = []
+        clean_text = ""
         split = text.split(' ')
         for i in range(len(split)):
             token = split[i]
+            if not token.isascii() or "http" in token.lower():
+                continue
             try:
                 # HASHTAGS
                 if token[0] == '#':
-                    tokens_list.append(self.parse_hashtags(token))
+                    tokens_list.extend(parse_hashtags(token))
 
                 # TAGS
                 elif token[0] == '@':
@@ -198,12 +204,14 @@ class Parse:
                         number, next_token_used = parse_number(number, "")
                         tokens_list.append(number)
 
-                elif "http" in token.lower():
-                    continue
                 # ALL THE REST - REGULAR TOKENS
                 else:
-                    clean_text.append(token)
+                    clean_text += token + ""
             except:
-                clean_text.append(token)
+                clean_text += token + ""
 
-        return ' '.join(clean_text), tokens_list
+        tokens_list.extend(word_tokenize(clean_text))
+        text_tokens_without_stopwords = [w.lower() if len(w) > 0 and w[0].islower() else w.upper()
+                                         for w in tokens_list if w not in self.stop_words]
+
+        return text_tokens_without_stopwords
