@@ -1,7 +1,7 @@
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from document import Document
-
+import re
 
 def remove_urls(full_text):
     if not full_text:
@@ -26,21 +26,24 @@ def tokenize_url(url):
 
 
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
-    list_of_hashtags = []
     if hashtag.find(".") > 0:
         hashtag = hashtag[0:hashtag.find(".")]
-    list_of_hashtags.append(hashtag.lower())
-    i = 2
-    j = 1
-    while i <= len(hashtag):
-        if i == len(hashtag) or hashtag[i].isupper() or hashtag[i] == "_":
-            list_of_hashtags.append(hashtag[j:i].lower())
-            if i == len(hashtag) or hashtag[i].isupper():
-                j = i
-            else:
-                j = i + 1
-        i += 1
-    return list_of_hashtags
+    list_of_tokens = [hashtag]
+    list_of_tokens.extend(re.sub('([A-Z]+) | (_)', r' \1', hashtag[1:]).split())
+#    if hashtag.find(".") > 0:
+#       hashtag = hashtag[0:hashtag.find(".")]
+#    list_of_hashtags.append(hashtag.lower())
+#    i = 2
+#    j = 1
+#    while i <= len(hashtag):
+#        if i == len(hashtag) or hashtag[i].isupper() or hashtag[i] == "_":
+#            list_of_hashtags.append(hashtag[j:i].lower())
+#            if i == len(hashtag) or hashtag[i].isupper():
+#                j = i
+#            else:
+#                j = i + 1
+#        i += 1
+    return list_of_tokens
 
 
 def parse_number(num, suffix):
@@ -206,9 +209,9 @@ class Parse:
 
                 # ALL THE REST - REGULAR TOKENS
                 else:
-                    clean_text += token + ""
+                    clean_text += token + " "
             except:
-                clean_text += token + ""
+                clean_text += token + " "
 
         tokens_list.extend(word_tokenize(clean_text))
         text_tokens_without_stopwords = [w.lower() if len(w) > 0 and w[0].islower() else w.upper()
