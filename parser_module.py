@@ -20,7 +20,9 @@ def tokenize_url(url):
     long_url = url[url_split + 3:]
     long_url = long_url[:len(long_url) - 2]
     tokenized_url = long_url.replace('/', '.').replace('-', '.').split('.')
-    return tokenized_url
+    # for w in tokenized_url:
+    #     print(w[0])
+    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url]
 
 
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
@@ -65,13 +67,14 @@ def parse_number(num, suffix):
 
 def get_suffix(num, suffix):
     flag = False
-    if suffix == "Thousand":
+    suffix = suffix.lower()
+    if suffix == "thousand":
         num *= 1000
         flag = True
-    elif suffix == "Million":
+    elif suffix == "million":
         num *= 1000000
         flag = True
-    elif suffix == "Billion":
+    elif suffix == "billion":
         num *= 1000000000
         flag = True
     return num, flag
@@ -99,6 +102,9 @@ class Parse:
         :return: Document object with corresponding fields.
         """
         tweet_id = doc_as_list[0]
+        # if tweet_id == '1281182375154606081':
+        #     print()
+        # print(tweet_id)
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
         url_tokens = tokenize_url(doc_as_list[3])
@@ -135,8 +141,8 @@ class Parse:
 
         if url_tokens:
             tokenized_text.extend(url_tokens)
-        if retweet_url_tokens:
-            tokenized_text.extend(retweet_url_tokens)
+        # if retweet_url_tokens:
+        #     tokenized_text.extend(retweet_url_tokens)
         if quote_url_tokens:
             tokenized_text.extend(quote_url_tokens)
 
@@ -147,8 +153,9 @@ class Parse:
             else:
                 term_dict[term] += 1
 
-        document = Document(tweet_id, tweet_date, full_text, url_tokens, retweet_text, retweet_url_tokens, quote_text,
-                            quote_url_tokens, term_dict, doc_length)
+        # document = Document(tweet_id, tweet_date, full_text, url_tokens, retweet_text, retweet_url_tokens, quote_text,
+        #                     quote_url_tokens, term_dict, doc_length)
+        document = Document(tweet_id, term_dict)
         return document
 
     def pre_process(self, text):
@@ -156,7 +163,6 @@ class Parse:
             return
         tokens_list = []
         clean_text = []
-        text = text.replace("percentage", "percent")
         split = text.split(' ')
         for i in range(len(split)):
             token = split[i]
@@ -170,7 +176,7 @@ class Parse:
                     tokens_list.append(token if not token.endswith(':') else token[:len(token)-1])
 
                 # PERCENTAGES
-                elif i < len(split) - 1 and split[i + 1] == "percent":
+                elif i < len(split) - 1 and split[i + 1] in ["percent", "percentage"]:
                     number = float(token)
                     if token.isnumeric():  # token is a round number
                         tokens_list.append(token + "%")
@@ -184,12 +190,13 @@ class Parse:
                 elif token.replace(',', '').replace('.', '').isnumeric():
                     number = token.replace(',', '')
                     if i < len(split) - 1:
-                        next_token_used, number = parse_number(number, split[i + 1])
+                        number, next_token_used = parse_number(number, split[i + 1])
                         tokens_list.append(number)
                         if next_token_used:
                             i += 1
                     else:
-                        tokens_list.append(parse_number(number, ""))
+                        number, next_token_used = parse_number(number, "")
+                        tokens_list.append(number)
 
                 elif "http" in token.lower():
                     continue

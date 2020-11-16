@@ -1,3 +1,5 @@
+import time
+
 from reader import ReadFile
 from configuration import ConfigClass
 from parser_module import Parse
@@ -19,7 +21,7 @@ def run_engine():
     indexer = Indexer(config)
 
     documents_list = r.read_file(file_name='sample4.parquet')
-
+    start_time = time.time()
     # Iterate over every document in the file
     for idx, document in enumerate(documents_list):
         # parse the document
@@ -27,7 +29,7 @@ def run_engine():
         number_of_documents += 1
         # index the document data
         indexer.add_new_doc(parsed_document)
-    print('Finished parsing and indexing. Starting to export files')
+    print('Finished parsing and indexing after {0} seconds. Starting to export files'.format(time.time()-start_time))
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.postingDict, "posting")
