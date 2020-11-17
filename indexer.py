@@ -37,10 +37,6 @@ class Indexer:
                     self.postingDict[term] = self.postingDict[term.upper()]
                     del self.postingDict[term.upper()]
 
-                elif term.lower() in self.inverted_idx.keys() or term.upper() in self.inverted_idx.keys():
-                    term = term.lower() if term.lower() in self.inverted_idx.keys() else term.upper()
-                    self.inverted_idx[term] += 1
-
                 else:
                     self.inverted_idx[term] += 1
 

@@ -1,7 +1,7 @@
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from document import Document
-
+import re
 
 def remove_urls(full_text):
     if not full_text:
@@ -26,21 +26,24 @@ def tokenize_url(url):
 
 
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
-    list_of_hashtags = []
     if hashtag.find(".") > 0:
         hashtag = hashtag[0:hashtag.find(".")]
-    list_of_hashtags.append(hashtag.lower())
-    i = 2
-    j = 1
-    while i <= len(hashtag):
-        if i == len(hashtag) or hashtag[i].isupper() or hashtag[i] == "_":
-            list_of_hashtags.append(hashtag[j:i].lower())
-            if i == len(hashtag) or hashtag[i].isupper():
-                j = i
-            else:
-                j = i + 1
-        i += 1
-    return list_of_hashtags
+    list_of_tokens = [hashtag]
+    list_of_tokens.extend(re.sub('([A-Z]+) | (_)', r' \1', hashtag[1:]).split())
+#    if hashtag.find(".") > 0:
+#       hashtag = hashtag[0:hashtag.find(".")]
+#    list_of_hashtags.append(hashtag.lower())
+#    i = 2
+#    j = 1
+#    while i <= len(hashtag):
+#        if i == len(hashtag) or hashtag[i].isupper() or hashtag[i] == "_":
+#            list_of_hashtags.append(hashtag[j:i].lower())
+#            if i == len(hashtag) or hashtag[i].isupper():
+#                j = i
+#            else:
+#                j = i + 1
+#        i += 1
+    return list_of_tokens
 
 
 def parse_number(num, suffix):
@@ -85,16 +88,6 @@ class Parse:
     def __init__(self):
         self.stop_words = stopwords.words('english')
 
-    def parse_sentence(self, text):
-        """
-        This function tokenizes a string, and remove stop words
-        :param text:
-        :return:
-        """
-        text_tokens = word_tokenize(text)
-        text_tokens_without_stopwords = [w.lower() if w[0].islower() else w.upper()
-                                         for w in text_tokens if w not in self.stop_words]
-        return text_tokens
 
     def parse_doc(self, doc_as_list):
         """
@@ -103,48 +96,30 @@ class Parse:
         :return: Document object with corresponding fields.
         """
         tweet_id = doc_as_list[0]
-        # if tweet_id == '1281182375154606081':
-        #     print()
-        # print(tweet_id)
+
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
         url_tokens = tokenize_url(doc_as_list[3])
-        # url_indices = doc_as_list[4]
-        retweet_text = doc_as_list[5]
-        retweet_url_tokens = tokenize_url(doc_as_list[6])
-        # retweet_url_indices = doc_as_list[7]
         quote_text = doc_as_list[8]
         quote_url_tokens = tokenize_url(doc_as_list[9])
-        quote_url_indices = doc_as_list[10]
-        retweet_quoted_text = doc_as_list[11]
-        retweet_quoted_url_tokens = tokenize_url(doc_as_list[12])
+
+        # url_indices = doc_as_list[4]
+        # retweet_text = doc_as_list[5]
+        # retweet_url_tokens = tokenize_url(doc_as_list[6])
+        # retweet_url_indices = doc_as_list[7]
+        # quote_url_indices = doc_as_list[10]
+        # retweet_quoted_text = doc_as_list[11]
+        # retweet_quoted_url_tokens = tokenize_url(doc_as_list[12])
         # retweet_quoted_url_indices = doc_as_list[13]
+
         term_dict = {}
 
-        # preprocessed = self.pre_process(full_text)
-        # full_text = preprocessed[0]
-        tokenized_text = self.pre_process(full_text)
-
-        # if retweet_text:
-        #     preprocessed = self.pre_process(retweet_text)
-        #     retweet_text = preprocessed[0]
-        #     tokenized_text.extend(preprocessed[1])
-
+        tokenized_text = self.parse_text(full_text)
         if quote_text:
-            # preprocessed = self.pre_process(quote_text)
-            # quote_text = preprocessed[0]
-            tokenized_text.extend(self.pre_process(quote_text))
-
-        # tokenized_text.extend(self.parse_sentence(full_text))
-        # tokenized_text.extend(self.parse_sentence(retweet_text))
-
-        # if quote_text:
-        #     tokenized_text.extend(self.parse_sentence(quote_text))
+            tokenized_text.extend(self.parse_text(quote_text))
 
         if url_tokens:
             tokenized_text.extend(url_tokens)
-        # if retweet_url_tokens:
-        #     tokenized_text.extend(retweet_url_tokens)
         if quote_url_tokens:
             tokenized_text.extend(quote_url_tokens)
 
@@ -162,12 +137,15 @@ class Parse:
         document = Document(tweet_id, term_dict)
         return document
 
-    def pre_process(self, text):
+    def parse_text(self, text):
         if not text:
             return
         tokens_list = []
         clean_text = ""
-        split = text.split(' ')
+
+        # split = text.split(' ')
+        split = re.sub('(\.)(\.)(\.)*|[!$%^&?*()={}~`]+|\[|\]', r' ', text).split()
+
         for i in range(len(split)):
             token = split[i]
             if not token.isascii() or "http" in token.lower():
@@ -179,7 +157,7 @@ class Parse:
 
                 # TAGS
                 elif token[0] == '@':
-                    tokens_list.append(token if not token.endswith(':') else token[:len(token)-1])
+                    tokens_list.append(token.lower() if not token.endswith(':') else token[:len(token)-1].lower())
 
                 # PERCENTAGES
                 elif i < len(split) - 1 and split[i + 1] in ["percent", "percentage"]:
@@ -206,11 +184,15 @@ class Parse:
 
                 # ALL THE REST - REGULAR TOKENS
                 else:
-                    clean_text += token + ""
+                    clean_text += token + " "
             except:
-                clean_text += token + ""
+                clean_text += token + " "
 
-        tokens_list.extend(word_tokenize(clean_text))
+        # tokenizer = word_tokenize(clean_text)
+        # tokenizer2 = clean_text.split(' ')
+
+        # tokens_list.extend(word_tokenize(clean_text))
+        tokens_list.extend(clean_text.split(' '))
         text_tokens_without_stopwords = [w.lower() if len(w) > 0 and w[0].islower() else w.upper()
                                          for w in tokens_list if w not in self.stop_words]
 
