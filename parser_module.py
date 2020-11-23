@@ -2,6 +2,16 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from document import Document
 import re
+import spacy
+
+
+def parse_entity(full_text):
+    #spacy.cli.download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm")
+    nlp(full_text)
+    doc = nlp(full_text)
+    return doc.ents
+
 
 def remove_urls(full_text):
     if not full_text:
@@ -96,7 +106,6 @@ class Parse:
         :return: Document object with corresponding fields.
         """
         tweet_id = doc_as_list[0]
-
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
         url_tokens = tokenize_url(doc_as_list[3])
@@ -113,7 +122,6 @@ class Parse:
         # retweet_quoted_url_indices = doc_as_list[13]
 
         term_dict = {}
-
         tokenized_text = self.parse_text(full_text)
         if quote_text:
             tokenized_text.extend(self.parse_text(quote_text))
