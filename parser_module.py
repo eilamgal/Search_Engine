@@ -1,7 +1,11 @@
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
 from document import Document
 import re
+import spacy
+
+
 
 def remove_urls(full_text):
     if not full_text:
@@ -88,7 +92,6 @@ class Parse:
     def __init__(self):
         self.stop_words = stopwords.words('english')
 
-
     def parse_doc(self, doc_as_list):
         """
         This function takes a tweet document as list and break it into different fields
@@ -125,8 +128,6 @@ class Parse:
 
         doc_length = len(tokenized_text)  # after text operations.
         for term in tokenized_text:
-            if len(term) == 0:
-                continue
             if term not in term_dict.keys():
                 term_dict[term] = 1
             else:
@@ -138,21 +139,24 @@ class Parse:
         return document
 
     def parse_text(self, text):
+        porter = PorterStemmer()
         if not text:
             return
         tokens_list = []
         clean_text = ""
-
         # split = text.split(' ')
-        split = re.sub('(\.)(\.)(\.)*|[!$%^&?*()={}~`]+|\[|\]', r' ', text).split()
+
+        split = re.sub(r'(\.)(\.)(\.)*|[!$%^&?*()={}~`]+|\[|\]', r' \1', text).split()
 
         for i in range(len(split)):
             token = split[i]
-            if not token.isascii() or "http" in token.lower():
+            if not token.isascii() or "http" in token.lower() or len(token) == 0:
                 continue
             try:
+                if token.isalpha():
+                    clean_text += token + " "
                 # HASHTAGS
-                if token[0] == '#':
+                elif token[0] == '#':
                     tokens_list.extend(parse_hashtags(token))
 
                 # TAGS
@@ -191,9 +195,17 @@ class Parse:
         # tokenizer = word_tokenize(clean_text)
         # tokenizer2 = clean_text.split(' ')
 
-        # tokens_list.extend(word_tokenize(clean_text))
+        entities = spacy.load('en_core_web_sm')
+
+        names = entities(clean_text).ents
+        for token in names:
+            tokens_list.append(token.text)
+            clean_text = clean_text.replace(token.text, " ", 1)
+
         tokens_list.extend(clean_text.split(' '))
-        text_tokens_without_stopwords = [w.lower() if len(w) > 0 and w[0].islower() else w.upper()
+
+        text_tokens_without_stopwords = [porter.stem(w).lower() if len(w) > 0 and w[0].islower()
+                                         else porter.stem(w).upper()
                                          for w in tokens_list if w not in self.stop_words]
 
         return text_tokens_without_stopwords
