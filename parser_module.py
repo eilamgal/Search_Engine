@@ -106,6 +106,7 @@ class Parse:
         :return: Document object with corresponding fields.
         """
         tweet_id = doc_as_list[0]
+
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
         url_tokens = tokenize_url(doc_as_list[3])
@@ -122,6 +123,7 @@ class Parse:
         # retweet_quoted_url_indices = doc_as_list[13]
 
         term_dict = {}
+
         tokenized_text = self.parse_text(full_text)
         if quote_text:
             tokenized_text.extend(self.parse_text(quote_text))
@@ -146,21 +148,24 @@ class Parse:
         return document
 
     def parse_text(self, text):
+        porter = PorterStemmer()
         if not text:
             return
         tokens_list = []
         clean_text = ""
-
         # split = text.split(' ')
-        split = re.sub('(\.)(\.)(\.)*|[!$%^&?*()={}~`]+|\[|\]', r' ', text).split()
+
+        split = re.sub(r'(\.)(\.)(\.)*|[!$%^&?*()={}~`]+|\[|\]', r' \1', text).split()
 
         for i in range(len(split)):
             token = split[i]
-            if not token.isascii() or "http" in token.lower():
+            if not token.isascii() or "http" in token.lower() or len(token) == 0:
                 continue
             try:
+                if token.isalpha():
+                    clean_text += token + " "
                 # HASHTAGS
-                if token[0] == '#':
+                elif token[0] == '#':
                     tokens_list.extend(parse_hashtags(token))
 
                 # TAGS
@@ -199,9 +204,17 @@ class Parse:
         # tokenizer = word_tokenize(clean_text)
         # tokenizer2 = clean_text.split(' ')
 
-        # tokens_list.extend(word_tokenize(clean_text))
+        entities = spacy.load('en_core_web_sm')
+
+        names = entities(clean_text).ents
+        for token in names:
+            tokens_list.append(token.text)
+            clean_text = clean_text.replace(token.text, " ", 1)
+
         tokens_list.extend(clean_text.split(' '))
-        text_tokens_without_stopwords = [w.lower() if len(w) > 0 and w[0].islower() else w.upper()
+
+        text_tokens_without_stopwords = [porter.stem(w).lower() if len(w) > 0 and w[0].islower()
+                                         else porter.stem(w).upper()
                                          for w in tokens_list if w not in self.stop_words]
 
         return text_tokens_without_stopwords
