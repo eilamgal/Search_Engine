@@ -1,9 +1,11 @@
 class Indexer:
 
     def __init__(self, config):
+        self.config = config
         self.inverted_idx = {}
         self.postingDict = {}
-        self.config = config
+        self.entities_inverted_idx = {}
+        self.entities_postingDict = {}
 
     def add_new_doc(self, document):
         """
@@ -12,6 +14,15 @@ class Indexer:
         :param document: a document need to be indexed.
         :return: -
         """
+        entities_doc_dictionary = document.entities_doc_dictionary
+        if entities_doc_dictionary:
+            for entity in entities_doc_dictionary.keys():
+                if entity not in self.entities_inverted_idx.keys():
+                    self.entities_inverted_idx[entity] = 1
+                    self.entities_postingDict[entity] = []
+                else:
+                    self.entities[entity] += 1
+                self.entities_postingDict[entity].append(document.tweet_id, entities_doc_dictionary[entity])
 
         document_dictionary = document.term_doc_dictionary
         # Go over each term in the doc
@@ -22,7 +33,6 @@ class Indexer:
             try:
                 # Update inverted index and posting
                 frequency = document_dictionary[term]
-
                 if term.lower() not in self.inverted_idx.keys() and term.upper() not in self.inverted_idx.keys():
                     self.inverted_idx[term] = 1
                     self.postingDict[term] = []

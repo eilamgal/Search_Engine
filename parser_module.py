@@ -3,14 +3,8 @@ from nltk.tokenize import word_tokenize
 from document import Document
 import re
 import spacy
-
-
-def parse_entity(full_text):
-    #spacy.cli.download("en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
-    nlp(full_text)
-    doc = nlp(full_text)
-    return doc.ents
+from nltk import PorterStemmer
+import time
 
 
 def remove_urls(full_text):
@@ -38,21 +32,11 @@ def tokenize_url(url):
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
     if hashtag.find(".") > 0:
         hashtag = hashtag[0:hashtag.find(".")]
-    list_of_tokens = [hashtag]
-    list_of_tokens.extend(re.sub('([A-Z]+) | (_)', r' \1', hashtag[1:]).split())
-#    if hashtag.find(".") > 0:
-#       hashtag = hashtag[0:hashtag.find(".")]
-#    list_of_hashtags.append(hashtag.lower())
-#    i = 2
-#    j = 1
-#    while i <= len(hashtag):
-#        if i == len(hashtag) or hashtag[i].isupper() or hashtag[i] == "_":
-#            list_of_hashtags.append(hashtag[j:i].lower())
-#            if i == len(hashtag) or hashtag[i].isupper():
-#                j = i
-#            else:
-#                j = i + 1
-#        i += 1
+    list_of_tokens = [hashtag.lower()]
+    if hashtag.find("_") > 0:
+        list_of_tokens.extend(token.lower() for token in re.sub('([_][a-z]+)', r' ', re.sub('([_]+)', r' ', hashtag[1:])).split())
+    else:
+        list_of_tokens.extend(token.lower() for token in re.sub('([A-Z][a-z]+)', r' \1', re.sub('([A-Z]+)', r' \1', hashtag[1:])).split())
     return list_of_tokens
 
 
@@ -97,6 +81,8 @@ class Parse:
 
     def __init__(self):
         self.stop_words = stopwords.words('english')
+        self.entities = spacy.load('en_core_web_sm')#disable=["tagger", "parser", "entity_linker", "textcat", "entity_ruler"]
+
 
 
     def parse_doc(self, doc_as_list):
@@ -123,7 +109,6 @@ class Parse:
         # retweet_quoted_url_indices = doc_as_list[13]
 
         term_dict = {}
-
         tokenized_text = self.parse_text(full_text)
         if quote_text:
             tokenized_text.extend(self.parse_text(quote_text))
@@ -204,9 +189,9 @@ class Parse:
         # tokenizer = word_tokenize(clean_text)
         # tokenizer2 = clean_text.split(' ')
 
-        entities = spacy.load('en_core_web_sm')
-
-        names = entities(clean_text).ents
+        time_test = time.time()
+        names = self.entities(clean_text).ents
+        time_test_result = time.time()-time_test
         for token in names:
             tokens_list.append(token.text)
             clean_text = clean_text.replace(token.text, " ", 1)
