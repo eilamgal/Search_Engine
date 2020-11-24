@@ -91,6 +91,8 @@ class Parse:
 
     def __init__(self):
         self.stop_words = stopwords.words('english')
+        # self.entities = spacy.load('en_core_web_sm')
+        self.porter = PorterStemmer()
 
     def parse_doc(self, doc_as_list):
         """
@@ -117,9 +119,9 @@ class Parse:
 
         term_dict = {}
 
-        tokenized_text = self.parse_text(full_text)
+        tokenized_text = self.parse_text(full_text)[0]
         if quote_text:
-            tokenized_text.extend(self.parse_text(quote_text))
+            tokenized_text.extend(self.parse_text(quote_text)[0])
 
         if url_tokens:
             tokenized_text.extend(url_tokens)
@@ -139,12 +141,14 @@ class Parse:
         return document
 
     def parse_text(self, text):
-        porter = PorterStemmer()
+
         if not text:
             return
         tokens_list = []
         clean_text = ""
         # split = text.split(' ')
+
+        entities = [x.group() for x in re.finditer(r'[A-Z]+[a-z]+([\s\-]+[A-Z]+[a-z]+)+', text)]
 
         split = re.sub(r'(\.)(\.)(\.)*|[!$%^&?*()={}~`]+|\[|\]', r' \1', text).split()
 
@@ -189,23 +193,14 @@ class Parse:
                 # ALL THE REST - REGULAR TOKENS
                 else:
                     clean_text += token + " "
+
             except:
                 clean_text += token + " "
 
-        # tokenizer = word_tokenize(clean_text)
-        # tokenizer2 = clean_text.split(' ')
-
-        entities = spacy.load('en_core_web_sm')
-
-        names = entities(clean_text).ents
-        for token in names:
-            tokens_list.append(token.text)
-            clean_text = clean_text.replace(token.text, " ", 1)
-
         tokens_list.extend(clean_text.split(' '))
 
-        text_tokens_without_stopwords = [porter.stem(w).lower() if len(w) > 0 and w[0].islower()
-                                         else porter.stem(w).upper()
+        text_tokens_without_stopwords = [self.porter.stem(w).lower() if len(w) > 0 and w[0].islower()
+                                         else self.porter.stem(w).upper()
                                          for w in tokens_list if w not in self.stop_words]
 
-        return text_tokens_without_stopwords
+        return text_tokens_without_stopwords, entities
