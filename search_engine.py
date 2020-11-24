@@ -20,16 +20,21 @@ def run_engine():
     p = Parse()
     indexer = Indexer(config)
 
-    documents_list = r.read_file(file_name='covid19_07-08.snappy.parquet')
-    start_time = time.time()
+    documents_list = r.read_file(file_name='sample4.parquet')
+    global_start_time = time.time()
     # Iterate over every document in the file
     for idx, document in enumerate(documents_list):
         # parse the document
+        start_time = time.time()
+
         parsed_document = p.parse_doc(document)
+        # print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
+
         number_of_documents += 1
         # index the document data
         indexer.add_new_doc(parsed_document)
-    print('Finished parsing and indexing after {0} seconds. Starting to export files'.format(time.time()-start_time))
+    print('Finished parsing and indexing after {0} seconds. Starting to export files'
+          .format(time.time()-global_start_time))
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.postingDict, "posting")

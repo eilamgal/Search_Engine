@@ -1,5 +1,6 @@
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
 from document import Document
 import re
 import spacy
@@ -81,9 +82,8 @@ class Parse:
 
     def __init__(self):
         self.stop_words = stopwords.words('english')
-        self.entities = spacy.load('en_core_web_sm')#disable=["tagger", "parser", "entity_linker", "textcat", "entity_ruler"]
-
-
+        # self.entities = spacy.load('en_core_web_sm')
+        self.porter = PorterStemmer()
 
     def parse_doc(self, doc_as_list):
         """
@@ -109,9 +109,10 @@ class Parse:
         # retweet_quoted_url_indices = doc_as_list[13]
 
         term_dict = {}
-        tokenized_text = self.parse_text(full_text)
+
+        tokenized_text = self.parse_text(full_text)[0]
         if quote_text:
-            tokenized_text.extend(self.parse_text(quote_text))
+            tokenized_text.extend(self.parse_text(quote_text)[0])
 
         if url_tokens:
             tokenized_text.extend(url_tokens)
@@ -120,8 +121,6 @@ class Parse:
 
         doc_length = len(tokenized_text)  # after text operations.
         for term in tokenized_text:
-            if len(term) == 0:
-                continue
             if term not in term_dict.keys():
                 term_dict[term] = 1
             else:
@@ -133,12 +132,14 @@ class Parse:
         return document
 
     def parse_text(self, text):
-        porter = PorterStemmer()
+
         if not text:
             return
         tokens_list = []
         clean_text = ""
         # split = text.split(' ')
+
+        entities = [x.group() for x in re.finditer(r'[A-Z]+[a-z]+([\s\-]+[A-Z]+[a-z]+)+', text)]
 
         split = re.sub(r'(\.)(\.)(\.)*|[!$%^&?*()={}~`]+|\[|\]', r' \1', text).split()
 
@@ -183,23 +184,14 @@ class Parse:
                 # ALL THE REST - REGULAR TOKENS
                 else:
                     clean_text += token + " "
+
             except:
                 clean_text += token + " "
 
-        # tokenizer = word_tokenize(clean_text)
-        # tokenizer2 = clean_text.split(' ')
-
-        time_test = time.time()
-        names = self.entities(clean_text).ents
-        time_test_result = time.time()-time_test
-        for token in names:
-            tokens_list.append(token.text)
-            clean_text = clean_text.replace(token.text, " ", 1)
-
         tokens_list.extend(clean_text.split(' '))
 
-        text_tokens_without_stopwords = [porter.stem(w).lower() if len(w) > 0 and w[0].islower()
-                                         else porter.stem(w).upper()
+        text_tokens_without_stopwords = [self.porter.stem(w).lower() if len(w) > 0 and w[0].islower()
+                                         else self.porter.stem(w).upper()
                                          for w in tokens_list if w not in self.stop_words]
 
-        return text_tokens_without_stopwords
+        return text_tokens_without_stopwords, entities
