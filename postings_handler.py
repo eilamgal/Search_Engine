@@ -2,9 +2,9 @@ import bucket
 MAX_SIZE = 566
 terms_dict = {}
 
+
 def flush_bucket():
-
-
+    return False
 
 
 class postings_handler:
