@@ -33,7 +33,7 @@ def tokenize_url(url):
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
     if hashtag.find(".") > 0:
         hashtag = hashtag[0:hashtag.find(".")]
-    list_of_tokens = [hashtag.lower()]
+    list_of_tokens = [hashtag. lower()]
     if hashtag.find("_") > 0:
         list_of_tokens.extend(token.lower() for token in re.sub('([_][a-z]+)', r' ', re.sub('([_]+)', r' ', hashtag[1:])).split())
     else:
@@ -138,9 +138,9 @@ class Parse:
         tokens_list = []
         clean_text = ""
         # split = text.split(' ')
-
+        if text[0:2] == "RT":
+            text = text[0:2]
         entities = [x.group() for x in re.finditer(r'[A-Z]+[a-z]+([\s\-]+[A-Z]+[a-z]+)+', text)]
-
         split = re.sub(r'(\.)(\.)(\.)*|[!$%^&?*()={}~`]+|\[|\]', r' \1', text).split()
 
         for i in range(len(split)):
@@ -156,7 +156,7 @@ class Parse:
 
                 # TAGS
                 elif token[0] == '@':
-                    tokens_list.append(token.lower() if not token.endswith(':') else token[:len(token)-1].lower())
+                    tokens_list.append(token if not token.endswith(':') else token[:len(token)-1].lower())
 
                 # PERCENTAGES
                 elif i < len(split) - 1 and split[i + 1] in ["percent", "percentage"]:
