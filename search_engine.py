@@ -25,19 +25,21 @@ def run_engine():
     # Iterate over every document in the file
     for idx, document in enumerate(documents_list):
         # parse the document
-        start_time = time.time()
+       # start_time = time.time()
 
         parsed_document = p.parse_doc(document)
-        # print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
-
+      #  print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
+        #start_time = time.time()
         number_of_documents += 1
         # index the document data
         indexer.add_new_doc(parsed_document)
+     #   print('Finished indexing document after {0} seconds.'.format(time.time() - start_time))
+    #    print()
     print('Finished parsing and indexing after {0} seconds. Starting to export files'
           .format(time.time()-global_start_time))
-
+    indexer.finish_indexing()
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
-    utils.save_obj(indexer.postingDict, "posting")
+    #utils.save_obj(indexer.postingDict, "posting")
 
 
 def load_index():

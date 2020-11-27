@@ -139,7 +139,7 @@ class Parse:
         clean_text = ""
         # split = text.split(' ')
         if text[0:2] == "RT":
-            text = text[0:2]
+            text = text[2:]
         entities = [x.group() for x in re.finditer(r'[A-Z]+[a-z]+([\s\-]+[A-Z]+[a-z]+)+', text)]
         split = re.sub(r'(\.)(\.)(\.)*|[!$%^&?*()={}~`]+|\[|\]', r' \1', text).split()
 
