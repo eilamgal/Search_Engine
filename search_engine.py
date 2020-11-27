@@ -38,6 +38,7 @@ def run_engine():
     print('Finished parsing and indexing after {0} seconds. Starting to export files'
           .format(time.time()-global_start_time))
     indexer.finish_indexing()
+    print(indexer.inverted_idx)
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     #utils.save_obj(indexer.postingDict, "posting")
 
@@ -50,6 +51,7 @@ def load_index():
 
 def search_and_rank_query(query, inverted_index, k):
     p = Parse()
+    #
     query_as_list = p.parse_sentence(query)
     searcher = Searcher(inverted_index)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)

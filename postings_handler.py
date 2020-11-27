@@ -27,7 +27,7 @@ class PostingsHandler:
         self.__equal_width_buckets(number_of_buckets)
         initialize_buckets(number_of_buckets)
 
-    def __flush_bucket(self, inverted_idx, bucket_index):#finish_indexing=False
+    def __flush_bucket(self, inverted_idx, bucket_index):
         """
         try:
             infile = open(self.config.get_saveFilesWithStem()+"\\bucket" + str(bucket_index) + '.pkl', "wb")
@@ -40,14 +40,13 @@ class PostingsHandler:
         """
         new_posting = utils.load_obj("bucket" + str(bucket_index) + '.pkl')
         for term in self.buckets[bucket_index].get_dict_terms():
-            if inverted_idx[term][1] < 0:
+            if inverted_idx[term][1][1] < 0:
                 new_posting.append([])
-                inverted_idx[term][1] = len(new_posting) - 1
-            new_posting[inverted_idx[term][1]].append(self.buckets[bucket_index].get_term_posting(term))
+                inverted_idx[term][1] = (bucket_index, len(new_posting) - 1)
+            new_posting[inverted_idx[term][1][1]].append(self.buckets[bucket_index].get_term_posting(term))
         self.size -= self.buckets[bucket_index].get_size()
         self.buckets[bucket_index].clean_bucket()
         utils.save_obj(new_posting, "bucket" + str(bucket_index) + '.pkl')
-
         """
        try:
            outfile = open(self.config.get_saveFilesWithStem()+"\\bucket" + str(bucket_index), "wb")

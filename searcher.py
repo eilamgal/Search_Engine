@@ -23,7 +23,9 @@ class Searcher:
         relevant_docs = {}
         for term in query:
             try: # an example of checks that you have to do
+                #posting = utils.load_obj("posting"+self.inverted_index[term][0])
                 posting_doc = posting[term]
+                #posting_doc = posting[self.inverted_index[term][1]]
                 for doc_tuple in posting_doc:
                     doc = doc_tuple[0]
                     if doc not in relevant_docs.keys():
@@ -33,3 +35,6 @@ class Searcher:
             except:
                 print('term {} not found in posting'.format(term))
         return relevant_docs
+
+    def __df_idf(self):#need to add parametrs
+        return

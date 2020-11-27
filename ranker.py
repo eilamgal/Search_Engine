@@ -21,3 +21,15 @@ class Ranker:
         :return: list of relevant document
         """
         return sorted_relevant_doc[:k]
+
+    def __inner_product(self):
+        return
+
+    def __cosine_similarity(self):
+        return
+
+    def __BM25(self):
+        return
+
+    def __euclidean_distance(Self):
+        return
