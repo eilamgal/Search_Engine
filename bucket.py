@@ -4,6 +4,8 @@ class Bucket:
         self.size = 0
 
     def append_term(self, term, doc_id, frequency):
+        # if term in self.dict.keys():
+        #     print()
         if term not in self.dict.keys():
             self.dict[term] = []
         self.dict[term].append((doc_id, frequency))
