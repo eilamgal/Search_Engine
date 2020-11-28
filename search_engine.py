@@ -52,7 +52,8 @@ def load_index():
 def search_and_rank_query(query, inverted_index, k):
     p = Parse()
     #
-    query_as_list = p.parse_sentence(query)
+    #query_as_list = p.parse_sentence(query)
+    query_as_list, x = p.parse_text(query)
     searcher = Searcher(inverted_index)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)

@@ -20,7 +20,7 @@ class Indexer:
         :param document: a document need to be indexed.
         :return: -
         """
-        """
+        #"""
         entities_doc_dictionary = document.entities_doc_dictionary
         if entities_doc_dictionary:
             for entity in entities_doc_dictionary.keys():
@@ -31,10 +31,11 @@ class Indexer:
                     self.entities[entity][0] += 1
                 self.entities_postingDict[entity][document.tweet_id] = entities_doc_dictionary[entity]
                 #self.entities_postingDict[entity].append(document.tweet_id, entities_doc_dictionary[entity])
-        """
+        #"""
         document_dictionary = document.term_doc_dictionary
         # Go over each term in the doc
-
+       # self.document_dict[document.tweet_id] = [document.tweet_date, 0, document_dictionary.keys().size() +
+        #                                         entities_doc_dictionary.keys().size(), -1]# stell need to resolve the max frec
         # if document.tweet_id == "1281197184482832384":
         #     print()
         for term in document_dictionary.keys():
