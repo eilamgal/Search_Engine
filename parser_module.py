@@ -121,6 +121,12 @@ class Parse:
 
         doc_length = len(tokenized_text)  # after text operations.
         for term in tokenized_text:
+            #temporary solutions
+            if len(term) < 2:
+                continue
+            if term[len(term)-1] == ".":
+                term = term[0:len(term)-1]
+            #
             if term not in term_dict.keys():
                 term_dict[term] = 1
             else:
@@ -132,7 +138,6 @@ class Parse:
         return document
 
     def parse_text(self, text):
-
         if not text:
             return
         tokens_list = []

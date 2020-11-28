@@ -38,6 +38,7 @@ class PostingsHandler:
 
         print("disk operation")
         """
+        print("disk operation")
         new_posting = utils.load_obj("bucket" + str(bucket_index) + '.pkl')
         for term in self.buckets[bucket_index].get_dict_terms():
             if inverted_idx[term][1][1] < 0:

@@ -26,7 +26,8 @@ def run_engine():
     for idx, document in enumerate(documents_list):
         # parse the document
        # start_time = time.time()
-
+        if len(indexer.inverted_idx.keys()) % 10000 == 0:
+            print(len(indexer.inverted_idx.keys()))
         parsed_document = p.parse_doc(document)
       #  print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
         #start_time = time.time()
