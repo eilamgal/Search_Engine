@@ -121,7 +121,7 @@ class Parse:
 
         term_dict = {}
 
-        tokenized_text, entities = self.parse_text(full_text)[0]
+        tokenized_text, entities = self.parse_text(full_text)
         if quote_text:
             tokenized_text.extend(self.parse_text(quote_text)[0])
 
