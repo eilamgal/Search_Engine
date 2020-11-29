@@ -9,8 +9,7 @@ class Indexer:
         self.entities_inverted_idx = {}
         self.entities_postingDict = []
         self.posting_handler = PostingsHandler(config)
-        #self.document_dict = {doc0_id:[time_doc0, counter of retweet for doc0, overall uniqe words in doc0, max_tf(doc0)],..}
-        self.document_dict = {}
+        self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0)] ,...}
         self.referrals_counter = {}
 
     def add_new_doc(self, document):
@@ -58,19 +57,32 @@ class Indexer:
             #except:
                 #print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
 
-        # for referral in document.referrals_ids:
-
+        if document.referrals_ids:
+            for referral in document.referrals_ids:
+                if referral not in self.referrals_counter.keys():
+                    self.referrals_counter[referral] = 1
+                else:
+                    self.referrals_counter[referral] += 1
 
     def finish_indexing(self):
         self.posting_handler.finish_indexing(self.inverted_idx)
+
         self.__check_entities()
         utils.save_obj(self.entities_postingDict, "bucket"+str(80))
         self.inverted_idx.update(self.entities_inverted_idx)
+
+        self.__update_referrals()
+        utils.save_obj(self.document_dict, "docDictionary")
 
     def __check_entities(self):
         for entity in self.entities_inverted_idx.keys():
             if self.entities_inverted_idx[entity][0] > 1:
                 self.inverted_idx[entity] = self.entities_inverted_idx[entity]
         self.entities_inverted_idx.clear()
+
+    def __update_referrals(self):
+        for doc_id in self.document_dict.keys():
+            if doc_id in self.referrals_counter.keys():
+                self.document_dict[doc_id][1] = self.referrals_counter[doc_id]
 
 
