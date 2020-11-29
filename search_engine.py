@@ -1,5 +1,5 @@
 import time
-
+import sys
 from reader import ReadFile
 from configuration import ConfigClass
 from parser_module import Parse
@@ -38,8 +38,14 @@ def run_engine():
     #    print()
     print('Finished parsing and indexing after {0} seconds. Starting to export files'
           .format(time.time()-global_start_time))
+    print(len(indexer.inverted_idx.keys()))
+    print(len(indexer.entities_inverted_idx.keys()))
+    print("indexer.inverted_idx size: " + str(sys.getsizeof(indexer.inverted_idx)))
+    print("indexer.entities_inverted_idx size: " + str(sys.getsizeof(indexer.entities_inverted_idx)))
+    print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
+
     indexer.finish_indexing()
-    print(indexer.inverted_idx)
+   # print(indexer.inverted_idx)
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     #utils.save_obj(indexer.postingDict, "posting")
 
