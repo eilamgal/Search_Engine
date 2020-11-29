@@ -182,7 +182,8 @@ class Parse:
 
         # document = Document(tweet_id, tweet_date, full_text, url_tokens, retweet_text, retweet_url_tokens, quote_text,
         #                     quote_url_tokens, term_dict, doc_length)
-        document = Document(tweet_id=tweet_id, term_doc_dictionary=term_dict, entities_doc_dictionary=entities_dict, referral_ids=referrals)
+        document = Document(tweet_id=tweet_id, term_doc_dictionary=term_dict, entities_doc_dictionary=entities_dict,
+                            referral_ids=referrals)
         return document
 
     def parse_text(self, text):
@@ -243,8 +244,8 @@ class Parse:
 
         tokens_list.extend(clean_text.split(' '))
 
-        text_tokens_without_stopwords = [self.porter.stem(w).lower() if len(w) > 0 and w[0].islower()
+        text_tokens_without_stopwords = [self.porter.stem(w).lower() if w[0].islower()
                                          else self.porter.stem(w).upper()
-                                         for w in tokens_list if w not in self.stop_words]
+                                         for w in tokens_list if len(w) > 0 and w not in self.stop_words]
 
         return text_tokens_without_stopwords, entities

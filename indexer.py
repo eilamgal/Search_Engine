@@ -11,6 +11,7 @@ class Indexer:
         self.posting_handler = PostingsHandler(config)
         #self.document_dict = {doc0_id:[time_doc0, counter of retweet for doc0, overall uniqe words in doc0, max_tf(doc0)],..}
         self.document_dict = {}
+        self.referrals_counter = {}
 
     def add_new_doc(self, document):
         """
@@ -57,6 +58,9 @@ class Indexer:
 
             #except:
                 #print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
+
+        # for referral in document.referrals_ids:
+
 
     def finish_indexing(self):
         self.posting_handler.finish_indexing(self.inverted_idx)
