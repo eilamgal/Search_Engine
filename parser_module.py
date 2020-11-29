@@ -106,10 +106,18 @@ class Parse:
 
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
-        url_tokens, referral_id1 = tokenize_url(doc_as_list[3])
+        url_tokens = tokenize_url(doc_as_list[3])[0]
         quote_text = doc_as_list[8]
-        quote_url_tokens, referral_id2 = tokenize_url(doc_as_list[9])
+        quote_url_tokens, referral_id1 = tokenize_url(doc_as_list[9])
+        retweet_url_tokens, referral_id2 = tokenize_url(doc_as_list[6])
+        referrals = {referral_id1, referral_id2}
 
+        if tweet_id in referrals:
+            referrals.remove(tweet_id)
+        if referrals == {'0'}:
+            referrals = None
+        elif '0' in referrals:
+            referrals.remove('0')
         # url_indices = doc_as_list[4]
         # retweet_text = doc_as_list[5]
         # retweet_url_tokens = tokenize_url(doc_as_list[6])
@@ -121,14 +129,18 @@ class Parse:
 
         term_dict = {}
 
-        tokenized_text, entities = self.parse_text(full_text)[0]
+        tokenized_text, entities = self.parse_text(full_text)
         if quote_text:
-            tokenized_text.extend(self.parse_text(quote_text)[0])
+            parsed_quote = self.parse_text(quote_text)
+            tokenized_text.extend(parsed_quote[0])
+            entities.extend(parsed_quote[1])
 
         if url_tokens:
             tokenized_text.extend(url_tokens)
         if quote_url_tokens:
             tokenized_text.extend(quote_url_tokens)
+        if retweet_url_tokens:
+            tokenized_text.extend(retweet_url_tokens)
         """
         doc_length = len(tokenized_text)  # after text operations.
         for term in tokenized_text:
@@ -148,18 +160,29 @@ class Parse:
                 continue
             if term[len(term) - 1] == ".":
                 term = term[0:len(term) - 1]
-            if term.lower() not in term_dict.keys() and term.upper() not in term_dict.keys().keys():
+            if term.lower() not in term_dict.keys() and term.upper() not in term_dict.keys():
                 term_dict[term] = 1
-            elif term.isupper() and term.lower() in term_dict.keys().keys():
+            elif term.isupper() and term.lower() in term_dict.keys():
                 term_dict[term.lower()] += 1
             elif term.islower() and term.upper() in term_dict.keys():
                 term_dict[term] = term_dict[term.upper()] + 1
                 del term_dict[term.upper()]
             else:
                 term_dict[term] += 1
+
+        entities_dict = {}
+
+        for entity in entities:
+            if len(entity) < 2:
+                continue
+            if entity not in entities_dict.keys():
+                entities_dict[entity] = 1
+            else:
+                entities_dict[entity] += 1
+
         # document = Document(tweet_id, tweet_date, full_text, url_tokens, retweet_text, retweet_url_tokens, quote_text,
         #                     quote_url_tokens, term_dict, doc_length)
-        document = Document(tweet_id, term_dict, entities_doc_dictionary=entities)
+        document = Document(tweet_id=tweet_id, term_doc_dictionary=term_dict, entities_doc_dictionary=entities_dict, referral_ids=referrals)
         return document
 
     def parse_text(self, text):
