@@ -20,7 +20,7 @@ class Indexer:
         :param document: a document need to be indexed.
         :return: -
         """
-        """
+
         entities_doc_dictionary = document.entities_doc_dictionary
         if entities_doc_dictionary:
             for entity in entities_doc_dictionary.keys():
@@ -31,7 +31,7 @@ class Indexer:
                     self.entities[entity][0] += 1
                 self.entities_postingDict[entity][document.tweet_id] = entities_doc_dictionary[entity]
                 #self.entities_postingDict[entity].append(document.tweet_id, entities_doc_dictionary[entity])
-        """
+
         document_dictionary = document.term_doc_dictionary
         # Go over each term in the doc
        # self.document_dict[document.tweet_id] = [document.tweet_date, 0, document_dictionary.keys().size() +
@@ -44,21 +44,15 @@ class Indexer:
                 frequency = document_dictionary[term]
                 if term.lower() not in self.inverted_idx.keys() and term.upper() not in self.inverted_idx.keys():
                     self.inverted_idx[term] = [1, (-1, -1)]
-                    #self.postingDict[term] = []
-
                 elif term.isupper() and term.lower() in self.inverted_idx.keys():
                     self.inverted_idx[term.lower()][0] += 1
                     term = term.lower()
-
                 elif term.islower() and term.upper() in self.inverted_idx.keys():
                     self.inverted_idx[term] = [self.inverted_idx[term.upper()][0] + 1,
                                                self.inverted_idx[term.upper()][1]]
                     #self.inverted_idx[term][0] = self.inverted_idx[term.upper()][0] + 1
                     del self.inverted_idx[term.upper()]
                     self.posting_handler.change_term_case(term.upper(), term)
-                    #self.postingDict[term] = self.postingDict[term.upper()]
-                    #del self.postingDict[term.upper()]
-
                 else:
                     self.inverted_idx[term][0] += 1
 

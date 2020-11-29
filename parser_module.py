@@ -126,7 +126,7 @@ class Parse:
                 continue
             if term[len(term)-1] == ".":
                 term = term[0:len(term)-1]
-            #
+            #Cats are good. bay cats => {(Cats ,1)}
             if term not in term_dict.keys():
                 term_dict[term] = 1
             else:

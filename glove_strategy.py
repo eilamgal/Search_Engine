@@ -21,13 +21,13 @@ class GloveStrategy(QueryHandlerStrategy):
             self.dict_adapter(embeddings_dict, vocabulary_dict)
         utils.save_obj(embeddings_dict, "embedding_dict")
 
-    def parse_query(self, query_as_list):
+    def expand_query(self, query_as_list):
         new_query_list = []
         embedding_dict = utils.load_obj("embedding_dict")
         new_embedding_dict = utils.load_obj("new_embedding_dict")
-        for word in query_as_list:
-            if word in embedding_dict.keys():
-                new_query_list.extend(self.__find_closest_embeddings(embedding_dict[word], 4, new_embedding_dict))
+        for term in query_as_list:
+            if term in embedding_dict.keys():
+                new_query_list.extend(self.__find_closest_embeddings(embedding_dict[term], 4, new_embedding_dict))
 
     def dict_adapter(self, vocabulary_dict, embedding_dict=None):
         if not embedding_dict:
