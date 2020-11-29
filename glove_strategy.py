@@ -29,7 +29,7 @@ class GloveStrategy(QueryHandlerStrategy):
             if term in embedding_dict.keys():
                 new_query_list.extend(self.__find_closest_embeddings(embedding_dict[term], 4, new_embedding_dict))
 
-    def dict_adapter(self, vocabulary_dict, embedding_dict=None):
+    def create_search_dict(self, vocabulary_dict, embedding_dict=None):
         if not embedding_dict:
             embedding_dict = utils.load_obj("embedding_dict")
         new_embedding_dict = {}

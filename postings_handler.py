@@ -10,14 +10,8 @@ abc_frequency_dict = {'a': 1.7, 'b': 4.4, 'c': 5.2, 'd': 3.2, 'e': 2.8, 'f': 4, 
 def initialize_buckets(num_of_buckets):
     for i in range(num_of_buckets):
         utils.save_obj([], "bucket" + str(i))
-        """
-        try:
-            outfile = open(self.config.get_saveFilesWithStem()+"bucket" + str(i) + '.pkl', "wb")
-            pickle.dump([], outfile)
-            outfile.close()
-        except:
-            print('problem with open file posting{}.pkl'.format(i))
-        """
+
+
 class PostingsHandler:
     def __init__(self, config, number_of_buckets=6):
         self.buckets = []
@@ -28,16 +22,6 @@ class PostingsHandler:
         initialize_buckets(number_of_buckets)
 
     def __flush_bucket(self, inverted_idx, bucket_index):
-        """
-        try:
-            infile = open(self.config.get_saveFilesWithStem()+"\\bucket" + str(bucket_index) + '.pkl', "wb")
-            new_posting = pickle.load(infile)
-            infile.close()
-        except:
-            print('problem with open file posting{}.pkl'.format(bucket_index))
-
-        print("disk operation")
-        """
         print("disk operation")
         new_posting = utils.load_obj("bucket" + str(bucket_index))
         for term in self.buckets[bucket_index].get_dict_terms():
@@ -48,14 +32,6 @@ class PostingsHandler:
         self.size -= self.buckets[bucket_index].get_size()
         self.buckets[bucket_index].clean_bucket()
         utils.save_obj(new_posting, "bucket" + str(bucket_index))
-        """
-       try:
-           outfile = open(self.config.get_saveFilesWithStem()+"\\bucket" + str(bucket_index), "wb")
-           pickle.dump(new_posting, outfile)
-           outfile.close()
-       except:
-           print('problem with open file posting{}.pkl'.format(bucket_index))
-       """
 
     def __equal_width_buckets(self, number_of_buckets):
         for key in abc_frequency_dict.keys():
