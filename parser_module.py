@@ -17,27 +17,38 @@ def remove_urls(full_text):
 
 
 def tokenize_url(url):
-    if not url:
-        return
+    if url == "{}" or url is None:
+        return None, "0"
     url_split = url.find("\":\"")
     if url_split == -1:
         return
     long_url = url[url_split + 3:]
     long_url = long_url[:len(long_url) - 2]
-    tokenized_url = long_url.replace('/', '.').replace('-', '.').split('.')
+    # tokenized_url = long_url.replace('/', '.').replace('-', '.').split('.')
+    tokenized_url = re.sub(r'([#!$%^&?*()={}~`\[\]])|([&=#/\.:\-_]+)', r' \1', long_url).split()
+
+    referral_id = "0"
+    if len(tokenized_url) >= 2:
+        if (tokenized_url[len(tokenized_url) - 2] == "status"
+                and tokenized_url[len(tokenized_url) - 1].isnumeric()):
+            referral_id = tokenized_url[len(tokenized_url) - 1]
+            del tokenized_url[len(tokenized_url)-1]
+
     # for w in tokenized_url:
     #     print(w[0])
-    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url]
+    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url], referral_id
 
 
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
     if hashtag.find(".") > 0:
         hashtag = hashtag[0:hashtag.find(".")]
-    list_of_tokens = [hashtag. lower()]
+    list_of_tokens = [hashtag.lower()]
     if hashtag.find("_") > 0:
-        list_of_tokens.extend(token.lower() for token in re.sub('([_][a-z]+)', r' ', re.sub('([_]+)', r' ', hashtag[1:])).split())
+        list_of_tokens.extend(
+            token.lower() for token in re.sub('([_][a-z]+)', r' ', re.sub('([_]+)', r' ', hashtag[1:])).split())
     else:
-        list_of_tokens.extend(token.lower() for token in re.sub('([A-Z][a-z]+)', r' \1', re.sub('([A-Z]+)', r' \1', hashtag[1:])).split())
+        list_of_tokens.extend(
+            token.lower() for token in re.sub('([A-Z][a-z]+)', r' \1', re.sub('([A-Z]+)', r' \1', hashtag[1:])).split())
     return list_of_tokens
 
 
@@ -95,9 +106,9 @@ class Parse:
 
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
-        url_tokens = tokenize_url(doc_as_list[3])
+        url_tokens, referral_id1 = tokenize_url(doc_as_list[3])
         quote_text = doc_as_list[8]
-        quote_url_tokens = tokenize_url(doc_as_list[9])
+        quote_url_tokens, referral_id2 = tokenize_url(doc_as_list[9])
 
         # url_indices = doc_as_list[4]
         # retweet_text = doc_as_list[5]
@@ -121,12 +132,12 @@ class Parse:
         """
         doc_length = len(tokenized_text)  # after text operations.
         for term in tokenized_text:
-            #temporary solutions
+            # temporary solutions
             if len(term) < 2:
                 continue
-            if term[len(term)-1] == ".":
-                term = term[0:len(term)-1]
-            #Cats are good. bay cats => {(Cats ,1)}
+            if term[len(term) - 1] == ".":
+                term = term[0:len(term) - 1]
+            # Cats are good. bay cats => {(Cats ,1)}
             if term not in term_dict.keys():
                 term_dict[term] = 1
             else:
@@ -175,7 +186,7 @@ class Parse:
 
                 # TAGS
                 elif token[0] == '@':
-                    tokens_list.append(token if not token.endswith(':') else token[:len(token)-1].lower())
+                    tokens_list.append(token if not token.endswith(':') else token[:len(token) - 1].lower())
 
                 # PERCENTAGES
                 elif i < len(split) - 1 and split[i + 1] in ["percent", "percentage"]:
