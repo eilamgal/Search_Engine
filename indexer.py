@@ -26,7 +26,7 @@ class Indexer:
                     self.entities_inverted_idx[entity] = [1, (80, -1)]
                     self.entities_postingDict[entity] = {}
                 else:
-                    self.entities[entity][0] += 1
+                    self.entities_inverted_idx[entity][0] += 1
                 self.entities_postingDict[entity][document.tweet_id] = entities_doc_dictionary[entity]
         document_dictionary = document.term_doc_dictionary
         # Go over each term in the doc
