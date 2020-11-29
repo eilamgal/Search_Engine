@@ -110,7 +110,7 @@ class Parse:
 
         term_dict = {}
 
-        tokenized_text = self.parse_text(full_text)[0]
+        tokenized_text, entities = self.parse_text(full_text)[0]
         if quote_text:
             tokenized_text.extend(self.parse_text(quote_text)[0])
 
@@ -118,7 +118,7 @@ class Parse:
             tokenized_text.extend(url_tokens)
         if quote_url_tokens:
             tokenized_text.extend(quote_url_tokens)
-
+        """
         doc_length = len(tokenized_text)  # after text operations.
         for term in tokenized_text:
             #temporary solutions
@@ -131,10 +131,24 @@ class Parse:
                 term_dict[term] = 1
             else:
                 term_dict[term] += 1
-
+        """
+        for term in tokenized_text:
+            if len(term) < 2:
+                continue
+            if term[len(term) - 1] == ".":
+                term = term[0:len(term) - 1]
+            if term.lower() not in term_dict.keys() and term.upper() not in term_dict.keys().keys():
+                term_dict[term] = 1
+            elif term.isupper() and term.lower() in term_dict.keys().keys():
+                term_dict[term.lower()] += 1
+            elif term.islower() and term.upper() in term_dict.keys():
+                term_dict[term] = term_dict[term.upper()] + 1
+                del term_dict[term.upper()]
+            else:
+                term_dict[term] += 1
         # document = Document(tweet_id, tweet_date, full_text, url_tokens, retweet_text, retweet_url_tokens, quote_text,
         #                     quote_url_tokens, term_dict, doc_length)
-        document = Document(tweet_id, term_dict)
+        document = Document(tweet_id, term_dict, entities_doc_dictionary=entities)
         return document
 
     def parse_text(self, text):
