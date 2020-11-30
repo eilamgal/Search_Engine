@@ -6,7 +6,8 @@ from parser_module import Parse
 from indexer import Indexer
 from searcher import Searcher
 import utils
-
+import os
+import glob
 
 def run_engine():
     """
@@ -19,8 +20,26 @@ def run_engine():
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse()
     indexer = Indexer(config)
-
-    documents_list = r.read_file(file_name='sample4.parquet')
+    """
+    all_files = glob.glob("C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\Data\\*\\*.snappy.parquet")
+    for file_path in all_files:
+        r = ReadFile(corpus_path=file_path)
+        documents_list = [path for path in r.read_file(file_name=file_path)]
+        global_start_time = time.time()
+        # Iterate over every document in the file
+        for idx, document in enumerate(documents_list):
+            # parse the document
+            # start_time = time.time()
+            if len(indexer.inverted_idx.keys()) % 10000 == 0:
+                print(len(indexer.inverted_idx.keys()))
+            parsed_document = p.parse_doc(document)
+            #  print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
+            # start_time = time.time()
+            number_of_documents += 1
+            # index the document data
+            indexer.add_new_doc(parsed_document)
+    """
+    documents_list = [path for path in r.read_file(file_name='sample4.parquet')]
     global_start_time = time.time()
     # Iterate over every document in the file
     for idx, document in enumerate(documents_list):
@@ -42,8 +61,8 @@ def run_engine():
     print(len(indexer.entities_inverted_idx.keys()))
     print("indexer.inverted_idx size: " + str(sys.getsizeof(indexer.inverted_idx)))
     print("indexer.entities_inverted_idx size: " + str(sys.getsizeof(indexer.entities_inverted_idx)))
-    print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
-
+#    print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
+    #"""
     indexer.finish_indexing()
    # print(indexer.inverted_idx)
     utils.save_obj(indexer.inverted_idx, "inverted_idx")

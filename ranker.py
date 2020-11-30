@@ -28,7 +28,8 @@ class Ranker:
     def __cosine_similarity(self):
         return
 
-    def __BM25(self):
+    def __BM25(self, b, k1, base, ):
+
         return
 
     def __euclidean_distance(Self):

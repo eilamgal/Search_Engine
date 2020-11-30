@@ -4,30 +4,40 @@ import utils
 import os
 MAX_SIZE = 1000000
 THRESHOLD = 200000
+BUCKET_ID = 0
 abc_frequency_dict = {'a': 1.7, 'b': 4.4, 'c': 5.2, 'd': 3.2, 'e': 2.8, 'f': 4, 'g': 1.6, 'h': 4.2, 'i': 7.3, 'j': 7.3, 'k': 0.86, 'l': 2.4, 'm': 3.8, 'n': 2.3, 'o': 7.6, 'p': 4.3, 'q': 0.22, 'r': 2.8, 's': 6.7, 't': 16, 'u': 1.2, 'v': 0.82, 'w': 5.5, 'x': 0.045, 'y': 0.76, 'z': 0.045}
 
-
-def initialize_buckets(num_of_buckets):
+"""
+def initialize_buckets(num_of_buckets, first_bucket_index=0):
     for i in range(num_of_buckets):
         utils.save_obj([], "bucket" + str(i))
+"""
 
 
 class PostingsHandler:
-    def __init__(self, config, number_of_buckets=6):
+    def __init__(self, config, number_of_buckets=6, first_bucket_index=0):
         self.buckets = []
         self.terms_dict = {}
         self.size = 0
         self.config = config
         self.__equal_width_buckets(number_of_buckets)
-        initialize_buckets(number_of_buckets)
+        self.buckets_mapping = {}
+        self.initialize_buckets(number_of_buckets, first_bucket_index)
+
+    def initialize_buckets(self, num_of_buckets, first_bucket_index=0):
+        for i in range(num_of_buckets):
+            utils.save_obj([], "bucket" + str(first_bucket_index + i))
+            self.buckets_mapping[i] = first_bucket_index + i
 
     def __flush_bucket(self, inverted_idx, bucket_index):
         print("disk operation")
-        new_posting = utils.load_obj("bucket" + str(bucket_index))
+        #new_posting = utils.load_obj("bucket" + str(bucket_index))
+        new_posting = utils.load_obj("bucket" + str(self.buckets_mapping[bucket_index]))
         for term in self.buckets[bucket_index].get_dict_terms():
             if inverted_idx[term][1][1] < 0:
                 new_posting.append([])
-                inverted_idx[term][1] = (bucket_index, len(new_posting) - 1)
+                #inverted_idx[term][1] = (bucket_index, len(new_posting) - 1)
+                inverted_idx[term][1] = (self.buckets_mapping[bucket_index], len(new_posting) - 1)
             new_posting[inverted_idx[term][1][1]].extend(self.buckets[bucket_index].get_term_posting(term))
         self.size -= self.buckets[bucket_index].get_size()
         self.buckets[bucket_index].clean_bucket()
