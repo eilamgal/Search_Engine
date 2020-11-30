@@ -36,7 +36,7 @@ def tokenize_url(url):
 
     # for w in tokenized_url:
     #     print(w[0])
-    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url], referral_id
+    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url if w.isascii()], referral_id
 
 
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
@@ -174,7 +174,7 @@ class Parse:
         entities_dict = {}
 
         for entity in entities:
-            if len(entity) < 2:
+            if len(entity) < 2 or not entity.isascii():
                 continue
             if entity not in entities_dict.keys():
                 entities_dict[entity] = 1
