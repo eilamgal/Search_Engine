@@ -18,9 +18,13 @@ def run_engine():
     """
     number_of_documents = 0
 
-    config = ConfigClass("C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\Data")
+    # config = ConfigClass("C:\\Users\\odedber\\PycharmProjects\\Search_Engine")
+    # glove_dict = GloveStrategy(
+    #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
+
+    config = ConfigClass("C:\\Users\\odedber\\PycharmProjects\\Search_Engine")
     glove_dict = GloveStrategy(
-        "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
+        "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse()
     indexer = Indexer(config)
