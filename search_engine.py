@@ -6,6 +6,7 @@ from parser_module import Parse
 from indexer import Indexer
 from searcher import Searcher
 import utils
+from glove_strategy import GloveStrategy
 import os
 import glob
 
@@ -40,6 +41,7 @@ def run_engine():
             indexer.add_new_doc(parsed_document)
     """
     documents_list = [path for path in r.read_file(file_name='sample4.parquet')]
+    glove_dict = GloveStrategy("C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
     global_start_time = time.time()
     # Iterate over every document in the file
     for idx, document in enumerate(documents_list):
@@ -52,7 +54,7 @@ def run_engine():
         #start_time = time.time()
         number_of_documents += 1
         # index the document data
-        indexer.add_new_doc(parsed_document)
+        indexer.add_new_doc(parsed_document, glove_dict)
      #   print('Finished indexing document after {0} seconds.'.format(time.time() - start_time))
     #    print()
     print('Finished parsing and indexing after {0} seconds. Starting to export files'

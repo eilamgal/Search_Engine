@@ -1,5 +1,7 @@
 from postings_handler import PostingsHandler
 import utils
+import numpy
+
 
 class Indexer:
     def __init__(self, config):
@@ -10,10 +12,10 @@ class Indexer:
         #self.entities_postingDict = []
         self.entities_posting_handler = PostingsHandler(config, number_of_buckets=2, first_bucket_index=80)
         self.posting_handler = PostingsHandler(config)
-        self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0)] ,...}
+        self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0), 4-tweet length, tweet glove vector] ,...}
         self.referrals_counter = {}
 
-    def add_new_doc(self, document):
+    def add_new_doc(self, document, golve_dict=None):
         """
         This function perform indexing process for a document object.
         Saved information is captures via two dictionaries ('inverted index' and 'posting')
@@ -36,11 +38,14 @@ class Indexer:
         document_dictionary = document.term_doc_dictionary
         # Go over each term in the doc
         self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
-                                                 len(entities_doc_dictionary.keys()), -1, 0]
+                                                 len(entities_doc_dictionary.keys()), -1, 0, document.tweet_length]
+        tweet_vector = numpy.full(25, 0)
         for term in document_dictionary.keys():
             #try:
                 # Update inverted index and posting
                 frequency = document_dictionary[term]
+                if term in golve_dict.keys():
+                    tweet_vector = tweet_vector + (frequency/document.tweet_length)*golve_dict[term]
                 if term.lower() not in self.inverted_idx.keys() and term.upper() not in self.inverted_idx.keys():
                     self.inverted_idx[term] = [1, (-1, -1)]
                 elif term.isupper() and term.lower() in self.inverted_idx.keys():
@@ -59,7 +64,7 @@ class Indexer:
 
             #except:
                 #print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
-
+        self.document_dict[document.tweet_id].append(tweet_vector)
         if document.referrals_ids:
             for referral in document.referrals_ids:
                 if referral not in self.referrals_counter.keys():

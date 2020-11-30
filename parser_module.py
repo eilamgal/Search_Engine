@@ -155,6 +155,7 @@ class Parse:
             else:
                 term_dict[term] += 1
         """
+        tweed_length = len(tokenized_text)
         for term in tokenized_text:
             if len(term) < 2:
                 continue
@@ -183,7 +184,7 @@ class Parse:
         # document = Document(tweet_id, tweet_date, full_text, url_tokens, retweet_text, retweet_url_tokens, quote_text,
         #                     quote_url_tokens, term_dict, doc_length)
         document = Document(tweet_id=tweet_id, term_doc_dictionary=term_dict, entities_doc_dictionary=entities_dict,
-                            referral_ids=referrals)
+                            referral_ids=referrals, tweet_length=tweed_length)
         return document
 
     def parse_text(self, text):
