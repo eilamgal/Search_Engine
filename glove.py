@@ -1,4 +1,3 @@
-from query_handler_strategy import QueryHandlerStrategy
 import numpy as np
 from nltk.corpus import stopwords
 import utils
@@ -21,7 +20,7 @@ def find_closest_embeddings(embedding, number_of_words, search_in_dict):
     return sorted(search_in_dict.keys(), key=lambda word: norm(embedding, search_in_dict[word]))[1:number_of_words]
 
 
-class GloveStrategy(QueryHandlerStrategy):
+class GloveStrategy():
     def __init__(self, embeddings_path, vocabulary_dict=None):
         stopwords_set = stopwords.words('english')
         self.embeddings_dict = {}

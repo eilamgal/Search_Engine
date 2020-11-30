@@ -11,7 +11,7 @@ class Indexer:
         self.entities_inverted_idx = {}
         #self.entities_postingDict = []
         self.entities_posting_handler = PostingsHandler(config, number_of_buckets=2, first_bucket_index=80)
-        self.posting_handler = PostingsHandler(config)
+        self.posting_handler = PostingsHandler(config, 10)
         self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0), 4-tweet length, tweet glove vector] ,...}
         self.referrals_counter = {}
 

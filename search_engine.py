@@ -6,9 +6,10 @@ from parser_module import Parse
 from indexer import Indexer
 from searcher import Searcher
 import utils
-from glove_strategy import GloveStrategy
+from glove import GloveStrategy
 import os
 import glob
+import regex as re
 
 def run_engine():
     """
@@ -17,14 +18,16 @@ def run_engine():
     """
     number_of_documents = 0
 
-    config = ConfigClass()
+    config = ConfigClass("C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\Data")
+    glove_dict = GloveStrategy(
+        "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse()
     indexer = Indexer(config)
-    """
-    all_files = glob.glob("C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\Data\\*\\*.snappy.parquet")
-    for file_path in all_files:
-        r = ReadFile(corpus_path=file_path)
+    #"""
+    all_files_paths = glob.glob(config.get__corpusPath()+"\\*\\*.snappy.parquet")
+    all_files_names = [file_name[-44:] for file_name in all_files_paths]
+    for file_path in all_files_names:
         documents_list = [path for path in r.read_file(file_name=file_path)]
         global_start_time = time.time()
         # Iterate over every document in the file
@@ -38,8 +41,10 @@ def run_engine():
             # start_time = time.time()
             number_of_documents += 1
             # index the document data
-            indexer.add_new_doc(parsed_document)
+            indexer.add_new_doc(parsed_document, glove_dict)
     """
+    #all_files_paths = glob.glob(config.get__corpusPath()+"\\*\\*.snappy.parquet")
+
     documents_list = [path for path in r.read_file(file_name='sample4.parquet')]
     glove_dict = GloveStrategy("C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
     global_start_time = time.time()
@@ -64,7 +69,7 @@ def run_engine():
     print("indexer.inverted_idx size: " + str(sys.getsizeof(indexer.inverted_idx)))
     print("indexer.entities_inverted_idx size: " + str(sys.getsizeof(indexer.entities_inverted_idx)))
 #    print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
-    #"""
+    """
     indexer.finish_indexing()
    # print(indexer.inverted_idx)
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
