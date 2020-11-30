@@ -28,6 +28,7 @@ def run_engine():
     all_files_paths = glob.glob(config.get__corpusPath()+"\\*\\*.snappy.parquet")
     all_files_names = [file_name[-44:] for file_name in all_files_paths]
     for file_path in all_files_names:
+        print(file_path)
         documents_list = [path for path in r.read_file(file_name=file_path)]
         global_start_time = time.time()
         # Iterate over every document in the file
