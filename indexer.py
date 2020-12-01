@@ -12,7 +12,7 @@ class Indexer:
         #self.entities_postingDict = []
         self.entities_posting_handler = PostingsHandler(config, number_of_buckets=2, first_bucket_index=80)
         self.posting_handler = PostingsHandler(config, 10)
-        self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0), 4-tweet length, tweet glove vector] ,...}
+        self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0), 4-tweet length, 5- tweet glove vector] ,...}
         self.referrals_counter = {}
         self.debug_tweet_counter = 0
         self.avg_tweet_length = 0
@@ -39,12 +39,15 @@ class Indexer:
                                                  len(entities_doc_dictionary.keys()), -1, 0, document.tweet_length]
         self.avg_tweet_length += (1/10000000)*document.doc_length
         tweet_vector = numpy.full(25, 0)
+
+        self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
+                                                 len(entities_doc_dictionary.keys()), -1, document.tweet_length, tweet_vector]
         for term in document_dictionary.keys():
             #try:
                 # Update inverted index and posting
                 frequency = document_dictionary[term]
-                if term in golve_dict.keys():
-                    tweet_vector = tweet_vector + (frequency/document.tweet_length)*golve_dict[term]
+                if term in glove_dict.keys():
+                    tweet_vector = tweet_vector + (frequency/document.tweet_length) * glove_dict[term]
                 if term.lower() not in self.inverted_idx.keys() and term.upper() not in self.inverted_idx.keys():
                     self.inverted_idx[term] = [1, (-1, -1)]
                 elif term.isupper() and term.lower() in self.inverted_idx.keys():
