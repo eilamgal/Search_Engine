@@ -30,7 +30,7 @@ class PostingsHandler:
             self.buckets_mapping[i] = first_bucket_index + i
 
     def __flush_bucket(self, inverted_idx, bucket_index):
-        print("disk operation")
+        #print("disk operation")
         #new_posting = utils.load_obj("bucket" + str(bucket_index))
         new_posting = utils.load_obj("bucket" + str(self.buckets_mapping[bucket_index]))
         for term in self.buckets[bucket_index].get_dict_terms():
@@ -41,7 +41,7 @@ class PostingsHandler:
             new_posting[inverted_idx[term][1][1]].extend(self.buckets[bucket_index].get_term_posting(term))
         self.size -= self.buckets[bucket_index].get_size()
         self.buckets[bucket_index].clean_bucket()
-        utils.save_obj(new_posting, "bucket" + str(bucket_index))
+        utils.save_obj(new_posting, "bucket" + str(self.buckets_mapping[bucket_index]))
 
     def __equal_width_buckets(self, number_of_buckets):
         for key in abc_frequency_dict.keys():
@@ -59,7 +59,10 @@ class PostingsHandler:
 
     def append_term(self, term, doc_id, frequency, inverted_idx):
         if len(term) == 0 or not term[0].isalpha():
-            self.buckets[len(self.buckets)-1].append_term(term, doc_id, frequency)
+            if len(term) > 1 and term[1].isalpha():
+                self.buckets[self.terms_dict[term[1].lower()]].append_term(term, doc_id, frequency)
+            else:
+                self.buckets[-1].append_term(term, doc_id, frequency)
         else:
             self.buckets[self.terms_dict[term[0].lower()]].append_term(term, doc_id, frequency)
         self.size += 1

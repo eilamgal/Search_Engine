@@ -14,6 +14,7 @@ class Indexer:
         self.posting_handler = PostingsHandler(config, 10)
         self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0), 4-tweet length, tweet glove vector] ,...}
         self.referrals_counter = {}
+        self.debug_tweet_counter = 0
 
     def add_new_doc(self, document, golve_dict=None):
         """
@@ -71,6 +72,9 @@ class Indexer:
                     self.referrals_counter[referral] = 1
                 else:
                     self.referrals_counter[referral] += 1
+        self.debug_tweet_counter += 1
+        if self.debug_tweet_counter % 1000000 == 0:
+            print(self.debug_tweet_counter)
 
     def finish_indexing(self):
         self.posting_handler.finish_indexing(self.inverted_idx)
@@ -78,7 +82,6 @@ class Indexer:
         self.__check_entities()
         #utils.save_obj(self.entities_postingDict, "bucket"+str(80))
         self.inverted_idx.update(self.entities_inverted_idx)
-
         self.__update_referrals()
         utils.save_obj(self.document_dict, "docDictionary")
 

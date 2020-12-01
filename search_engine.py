@@ -22,13 +22,13 @@ def run_engine():
     # glove_dict = GloveStrategy(
     #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
 
-    config = ConfigClass("C:\\Users\\odedber\\PycharmProjects\\Search_Engine")
+    config = ConfigClass("C:\\Users\\eilam gal\\Search_Engine")
     glove_dict = GloveStrategy(
-        "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
+        "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse()
     indexer = Indexer(config)
-    #"""
+    """
     all_files_paths = glob.glob(config.get__corpusPath()+"\\*\\*.snappy.parquet")
     all_files_names = [file_name[-44:] for file_name in all_files_paths]
     for file_path in all_files_names:
@@ -74,7 +74,7 @@ def run_engine():
     print("indexer.inverted_idx size: " + str(sys.getsizeof(indexer.inverted_idx)))
     print("indexer.entities_inverted_idx size: " + str(sys.getsizeof(indexer.entities_inverted_idx)))
 #    print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
-    """
+   # """
     indexer.finish_indexing()
    # print(indexer.inverted_idx)
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
