@@ -17,7 +17,7 @@ class Indexer:
         self.debug_tweet_counter = 0
         self.avg_tweet_length = 0
 
-    def add_new_doc(self, document, golve_dict=None):
+    def add_new_doc(self, document, glove_dict=None):
         """
         This function perform indexing process for a document object.
         Saved information is captures via two dictionaries ('inverted index' and 'posting')
@@ -39,12 +39,11 @@ class Indexer:
                                                  len(entities_doc_dictionary.keys()), -1, 0, document.tweet_length]
         self.avg_tweet_length += (1/10000000)*document.doc_length
         tweet_vector = numpy.full(25, 0)
-
         self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
                                                  len(entities_doc_dictionary.keys()), -1, document.tweet_length, tweet_vector]
         for term in document_dictionary.keys():
-            #try:
-                # Update inverted index and posting
+            try:
+                #Update inverted index and posting
                 frequency = document_dictionary[term]
                 if term in glove_dict.keys():
                     tweet_vector = tweet_vector + (frequency/document.tweet_length) * glove_dict[term]
@@ -61,8 +60,8 @@ class Indexer:
                 else:
                     self.inverted_idx[term][0] += 1
                 self.posting_handler.append_term(term, document.tweet_id, frequency, self.inverted_idx)
-            #except:
-                #print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
+            except:
+                print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
         self.document_dict[document.tweet_id].append(tweet_vector)
         if document.referrals_ids:
             for referral in document.referrals_ids:
