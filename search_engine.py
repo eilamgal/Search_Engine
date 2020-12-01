@@ -7,6 +7,7 @@ from indexer import Indexer
 from searcher import Searcher
 import utils
 from glove import GloveStrategy
+AVG_TWEET_LENGTH = 26
 import os
 import glob
 import regex as re
@@ -76,8 +77,9 @@ def run_engine():
 #    print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
    # """
     indexer.finish_indexing()
-   # print(indexer.inverted_idx)
+    #avg_tweet_length = indexer.avg_tweet_length
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
+
     #utils.save_obj(indexer.postingDict, "posting")
 
 
@@ -87,19 +89,30 @@ def load_index():
     return inverted_index
 
 
+def loat_tweet_dect():
+    tweet_dict = utils.load_obj("docDictionary")
+    return  tweet_dict
+
+
 def search_and_rank_query(query, inverted_index, k):
     p = Parse()
     #
     #query_as_list = p.parse_sentence(query)
+    start_time = time.time()
+    tweet_dict = loat_tweet_dect()
+    print(time.time()-start_time)
+    glove_dict = GloveStrategy(
+        "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
+
     query_as_list, x = p.parse_text(query)
-    searcher = Searcher(inverted_index)
-    relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
+    searcher = Searcher(inverted_index, tweet_dict, AVG_TWEET_LENGTH)
+    relevant_docs = searcher.relevant_docs_from_posting(query_as_list, glove_dict=glove_dict)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
 def main():
-    run_engine()
+    #run_engine()
     query = input("Please enter a query: ")
     k = int(input("Please enter number of docs to retrieve: "))
     inverted_index = load_index()

@@ -15,6 +15,7 @@ class Indexer:
         self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0), 4-tweet length, tweet glove vector] ,...}
         self.referrals_counter = {}
         self.debug_tweet_counter = 0
+        self.avg_tweet_length = 0
 
     def add_new_doc(self, document, golve_dict=None):
         """
@@ -28,18 +29,15 @@ class Indexer:
             for entity in entities_doc_dictionary.keys():
                 if entity not in self.entities_inverted_idx.keys():
                     self.entities_inverted_idx[entity] = [1, (-1, -1)]
-                    #self.entities_inverted_idx[entity] = [1, (80, len(self.entities_postingDict))]
-                    #self.entities_postingDict.append([])
                 else:
                     self.entities_inverted_idx[entity][0] += 1
-                    #self.entities_postingDict[self.entities_inverted_idx[entity][1][1]].extend((
-                    #document.tweet_id, entities_doc_dictionary[entity]))
                 self.entities_posting_handler.append_term(entity, document.tweet_id, entities_doc_dictionary[entity],
                                                           self.entities_inverted_idx)
         document_dictionary = document.term_doc_dictionary
         # Go over each term in the doc
         self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
                                                  len(entities_doc_dictionary.keys()), -1, 0, document.tweet_length]
+        self.avg_tweet_length += (1/10000000)*document.doc_length
         tweet_vector = numpy.full(25, 0)
         for term in document_dictionary.keys():
             #try:
@@ -55,14 +53,11 @@ class Indexer:
                 elif term.islower() and term.upper() in self.inverted_idx.keys():
                     self.inverted_idx[term] = [self.inverted_idx[term.upper()][0] + 1,
                                                self.inverted_idx[term.upper()][1]]
-                    #self.inverted_idx[term][0] = self.inverted_idx[term.upper()][0] + 1
                     del self.inverted_idx[term.upper()]
                     self.posting_handler.change_term_case(term.upper(), term)
                 else:
                     self.inverted_idx[term][0] += 1
                 self.posting_handler.append_term(term, document.tweet_id, frequency, self.inverted_idx)
-                #self.postingDict[term].append((document.tweet_id, frequency))
-
             #except:
                 #print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
         self.document_dict[document.tweet_id].append(tweet_vector)

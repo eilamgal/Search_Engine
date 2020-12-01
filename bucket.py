@@ -4,11 +4,15 @@ class Bucket:
         self.size = 0
 
     def append_term(self, term, doc_id, frequency):
-        # if term in self.dict.keys():
-        #     print()
         if term not in self.dict.keys():
             self.dict[term] = []
         self.dict[term].append((doc_id, frequency))
+        self.size += 1
+
+    def append_tweet(self, doc_id, vector):
+        if doc_id not in self.dict.keys():
+            self.dict[doc_id] = []
+        self.dict[doc_id].append(vector)
         self.size += 1
 
     def get_size(self):

@@ -1,3 +1,9 @@
+GLOVE_WEIGHT = 0.4
+BM25_WEIGHT = 0.4
+REFERRAL_WEIGHT = 0.2
+UPDATE_WEIGHT = 0
+
+
 class Ranker:
     def __init__(self):
         pass
@@ -10,7 +16,8 @@ class Ranker:
         :param relevant_doc: dictionary of documents that contains at least one term from the query.
         :return: sorted list of documents by score
         """
-        return sorted(relevant_doc.items(), key=lambda item: item[1], reverse=True)
+        return sorted(dict.items(), key=lambda item: GLOVE_WEIGHT*item[1][0]+BM25_WEIGHT*item[1][1]+REFERRAL_WEIGHT
+                                                    *item[1][2], reverse=True)# +UPDATE_WEIGHT*item[1][3]
 
     @staticmethod
     def retrieve_top_k(sorted_relevant_doc, k=1):
@@ -28,9 +35,7 @@ class Ranker:
     def __cosine_similarity(self):
         return
 
-    def __BM25(self, b, k1, base, ):
 
-        return
 
     def __euclidean_distance(Self):
         return
