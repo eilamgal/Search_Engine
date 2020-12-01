@@ -12,14 +12,15 @@ class Indexer:
         #self.entities_postingDict = []
         self.entities_posting_handler = PostingsHandler(config, number_of_buckets=2, first_bucket_index=80)
         self.posting_handler = PostingsHandler(config, 10)
-        self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0), 4-tweet length, tweet glove vector] ,...}
+        self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0), 4-tweet length, 5- tweet glove vector] ,...}
         self.referrals_counter = {}
         self.debug_tweet_counter = 0
 
-    def add_new_doc(self, document, golve_dict=None):
+    def add_new_doc(self, document, glove_dict=None):
         """
         This function perform indexing process for a document object.
         Saved information is captures via two dictionaries ('inverted index' and 'posting')
+        :param glove_dict: glove dictionary vectors
         :param document: a document need to be indexed.
         :return: -
         """
@@ -38,15 +39,17 @@ class Indexer:
                                                           self.entities_inverted_idx)
         document_dictionary = document.term_doc_dictionary
         # Go over each term in the doc
-        self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
-                                                 len(entities_doc_dictionary.keys()), -1, 0, document.tweet_length]
+
         tweet_vector = numpy.full(25, 0)
+
+        self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
+                                                 len(entities_doc_dictionary.keys()), -1, document.tweet_length, tweet_vector]
         for term in document_dictionary.keys():
             #try:
                 # Update inverted index and posting
                 frequency = document_dictionary[term]
-                if term in golve_dict.keys():
-                    tweet_vector = tweet_vector + (frequency/document.tweet_length)*golve_dict[term]
+                if term in glove_dict.keys():
+                    tweet_vector = tweet_vector + (frequency/document.tweet_length) * glove_dict[term]
                 if term.lower() not in self.inverted_idx.keys() and term.upper() not in self.inverted_idx.keys():
                     self.inverted_idx[term] = [1, (-1, -1)]
                 elif term.isupper() and term.lower() in self.inverted_idx.keys():
@@ -61,11 +64,12 @@ class Indexer:
                 else:
                     self.inverted_idx[term][0] += 1
                 self.posting_handler.append_term(term, document.tweet_id, frequency, self.inverted_idx)
-                #self.postingDict[term].append((document.tweet_id, frequency))
 
             #except:
                 #print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
-        self.document_dict[document.tweet_id].append(tweet_vector)
+
+        self.document_dict[document.tweet_id][5] = tweet_vector
+
         if document.referrals_ids:
             for referral in document.referrals_ids:
                 if referral not in self.referrals_counter.keys():
