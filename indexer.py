@@ -1,7 +1,7 @@
 from postings_handler import PostingsHandler
 import utils
 import numpy
-
+from tweet_posting_handler import TweetPostingHandler
 
 class Indexer:
     def __init__(self, config):
@@ -9,13 +9,13 @@ class Indexer:
         self.inverted_idx = {}
         #self.entities_inverted_idx = {term0 : [idf(term0), address of term0 on the disk = (posting file num,position in this posting file)], term1 : ...}
         self.entities_inverted_idx = {}
-        #self.entities_postingDict = []
         self.entities_posting_handler = PostingsHandler(config, number_of_buckets=2, first_bucket_index=80)
-        self.posting_handler = PostingsHandler(config, 10)
+        self.posting_handler = PostingsHandler(config, 10, first_bucket_index=20)
         self.document_dict = {} # {doc0_id:[0-date, 1-corpus_referrals, 2-unique_words, 3-max_tf(doc0), 4-tweet length, 5- tweet glove vector] ,...}
         self.referrals_counter = {}
         self.debug_tweet_counter = 0
         self.avg_tweet_length = 0
+        self.tweet_posting_handler = TweetPostingHandler(config, 40)
 
     def add_new_doc(self, document, glove_dict=None):
         """
@@ -39,8 +39,11 @@ class Indexer:
                                                  len(entities_doc_dictionary.keys()), -1, 0, document.tweet_length]
         self.avg_tweet_length += (1/10000000)*document.doc_length
         tweet_vector = numpy.full(25, 0)
+        #self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
+         #                                        len(entities_doc_dictionary.keys()), -1, document.tweet_length, tweet_vector]
         self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
-                                                 len(entities_doc_dictionary.keys()), -1, document.tweet_length, tweet_vector]
+                                                 len(entities_doc_dictionary.keys()), -1, document.tweet_length,
+                                                 None]
         for term in document_dictionary.keys():
             try:
                 #Update inverted index and posting
@@ -62,17 +65,19 @@ class Indexer:
                 self.posting_handler.append_term(term, document.tweet_id, frequency, self.inverted_idx)
             except:
                 print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
-        self.document_dict[document.tweet_id].append(tweet_vector)
+        #self.document_dict[document.tweet_id][5] = tweet_vector
+        self.tweet_posting_handler.append_tweet(document.tweet_id, tweet_vector, self.document_dict)
         if document.referrals_ids:
             for referral in document.referrals_ids:
                 if referral not in self.referrals_counter.keys():
                     self.referrals_counter[referral] = 1
                 else:
                     self.referrals_counter[referral] += 1
+        """
         self.debug_tweet_counter += 1
         if self.debug_tweet_counter % 1000000 == 0:
             print(self.debug_tweet_counter)
-
+        """
     def finish_indexing(self):
         self.posting_handler.finish_indexing(self.inverted_idx)
 

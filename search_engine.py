@@ -112,7 +112,7 @@ def search_and_rank_query(query, inverted_index, k):
 
 
 def main():
-    #run_engine()
+    run_engine()
     query = input("Please enter a query: ")
     k = int(input("Please enter number of docs to retrieve: "))
     inverted_index = load_index()
