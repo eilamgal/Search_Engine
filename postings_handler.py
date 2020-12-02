@@ -14,6 +14,16 @@ def initialize_buckets(num_of_buckets, first_bucket_index=0):
 """
 
 
+def get_bucket_index_by_term(term, number_of_bukcets):
+    if len(term) == 0 or not term[0].isalpha():
+        if len(term) > 1 and term[1].isalpha():
+            return (ord(term[1].lower())-ord('a')) % number_of_bukcets
+        else:
+            return number_of_bukcets-1
+    else:
+        return (ord(term[0].lower()) - ord('a')) % number_of_bukcets
+
+
 class PostingsHandler:
     def __init__(self, config, number_of_buckets=6, first_bucket_index=0):
         self.buckets = []

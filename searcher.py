@@ -5,6 +5,10 @@ import math
 from numpy import dot
 from numpy.linalg import norm
 import numpy as np
+import time
+import postings_handler
+from configuration import ConfigClass
+
 
 def bm25(corpus_term_frequency, tweet_term_frequency, avg_tweet_length, tweet_length, corpus_size=10000000, k=1.4,
          b=0.75, base=10):
@@ -49,6 +53,20 @@ class Searcher:
                 query_vector = query_vector + (1 / len(query)) * glove_dict[term.upper()]
             elif term in glove_dict.keys():
                 query_vector = query_vector + (1 / len(query)) * glove_dict[term.lower]
+        """"
+        for i in range(len(query)):
+            term = query[i]
+            if term not in self.inverted_index.keys():
+                if term.islower() and term.upper() in self.inverted_index.keys():
+                    query[i] = term.upper()
+                elif term.isupper() and term.lower() in self.inverted_index.keys():
+                    query[i] = term.lower()
+        query_buckets = {}
+        for term in query:
+            if postings_handler.get_bucket_index_by_term(term, 10) not in query_buckets.keys():
+                query_buckets[postings_handler.get_bucket_index_by_term(term, 10)] = []
+            query_buckets[postings_handler.get_bucket_index_by_term(term, 10)].append(term)
+        """
         #posting = utils.load_obj("posting")
         relevant_docs = {} #{doc ID : [0-golve score(some agabric distance), 1-BM25, 2-retweet score, 3-time score(more update better score)]}
         for term in query:
@@ -60,7 +78,9 @@ class Searcher:
                         term = term.lower()
                     else:
                         continue
+                t = time.time()
                 posting = utils.load_obj("bucket"+str(self.inverted_index[term][1][0]))
+                print("time to read buket: ", time.time()-t)
                 #posting_doc = posting[term]
                 posting_doc = posting[self.inverted_index[term][1][1]]
                 for doc_tuple in posting_doc:
@@ -70,7 +90,12 @@ class Searcher:
                     if doc not in relevant_docs.keys():
                         relevant_docs[doc] = [cosine(query_vector, self.tweet_dict[doc][6]), bm25(self.inverted_index[term][0],
                                                                                               doc_tuple[1], self.avg_tweet_length, self.tweet_dict[doc][4]),
-                                              self.tweet_dict[doc][1], self.tweet_dict[doc][0]]
+                                             self.tweet_dict[doc][1], self.tweet_dict[doc][0]]
+                       #4 relevant_docs[doc] = [0,
+                         #                     bm25(self.inverted_index[term][0],
+                          #                         doc_tuple[1], self.avg_tweet_length, self.tweet_dict[doc][4]),
+                           #                   self.tweet_dict[doc][1], self.tweet_dict[doc][0]]
+
                     else:
                         relevant_docs[doc][1] += bm25(self.inverted_index[term][0], doc_tuple[1], self.avg_tweet_length,
                                                       self.tweet_dict[doc_tuple[0]][4])

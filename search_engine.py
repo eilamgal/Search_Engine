@@ -94,29 +94,35 @@ def loat_tweet_dect():
     return  tweet_dict
 
 
-def search_and_rank_query(query, inverted_index, k):
+def search_and_rank_query(query, inverted_index, k, glove_dict, tweet_dict):
     p = Parse()
     #
     #query_as_list = p.parse_sentence(query)
-    start_time = time.time()
-    tweet_dict = loat_tweet_dect()
-    start_time = time.time()
-    print(time.time()-start_time)
-    glove_dict = GloveStrategy(
-        "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
 
+    #tweet_dict = loat_tweet_dect()
+
+    #glove_dict = GloveStrategy(
+     #   "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
+    start_time = time.time()
     query_as_list, x = p.parse_text(query)
     searcher = Searcher(inverted_index, tweet_dict, AVG_TWEET_LENGTH)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list, glove_dict=glove_dict)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     print("IR time: ", time.time()-start_time)
-    return searcher.ranker.retrieve_top_k(ranked_docs, k)
+    start_time = time.time()
+    retrive_list = searcher.ranker.retrieve_top_k(ranked_docs, k)
+    print("time to retrieve_top_k: ", time.time()-start_time)
+    return retrive_list
 
 
 def main():
     #run_engine()
+    tweet_dict = loat_tweet_dect()
+
+    glove_dict = GloveStrategy(
+        "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
     query = input("Please enter a query: ")
     k = int(input("Please enter number of docs to retrieve: "))
     inverted_index = load_index()
-    for doc_tuple in search_and_rank_query(query, inverted_index, k):
+    for doc_tuple in search_and_rank_query(query, inverted_index, k, glove_dict, tweet_dict):
         print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
