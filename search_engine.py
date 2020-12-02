@@ -88,10 +88,15 @@ def load_index():
     inverted_index = utils.load_obj("inverted_idx")
     return inverted_index
 
-
 def loat_tweet_dect():
     tweet_dict = utils.load_obj("docDictionary")
-    return  tweet_dict
+    buckets = []
+    for i in range(tweet_dict["tweet_vector_buckets"]):
+        buckets.append(utils.load_obj("bucket"+str((40+i))))
+    for tweet_id in tweet_dict.keys():
+        address = tweet_dict[tweet_id][5]
+        tweet_dict[tweet_id][5] = buckets[address[0]][address[1]]
+    return tweet_dict
 
 
 def search_and_rank_query(query, inverted_index, k, glove_dict, tweet_dict):
