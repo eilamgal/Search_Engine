@@ -44,11 +44,11 @@ class Indexer:
                                                           self.entities_inverted_idx)
         document_dictionary = document.term_doc_dictionary
         # Go over each term in the doc
-        self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
+        self.document_dict[document.tweet_id] = [document.tweet_timestamp, 0, len(document_dictionary.keys()) +
                                                  len(entities_doc_dictionary.keys()), -1, 0, document.tweet_length]
         self.avg_tweet_length += (1/10000000)*document.doc_length
         tweet_vector = numpy.full(25, 0)
-        self.document_dict[document.tweet_id] = [document.tweet_date, 0, len(document_dictionary.keys()) +
+        self.document_dict[document.tweet_id] = [document.tweet_timestamp, 0, len(document_dictionary.keys()) +
                                                  len(entities_doc_dictionary.keys()), -1, document.tweet_length,
                                                  None]
         for term in document_dictionary.keys():
@@ -73,7 +73,10 @@ class Indexer:
             except:
                 print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
 
-        self.tweet_posting_handler.append_tweet(document.tweet_id, tweet_vector, self.document_dict)
+        self.document_dict[document.tweet_id][5] = tweet_vector  # OLD METHOD
+
+        # self.tweet_posting_handler.append_tweet(document.tweet_id, tweet_vector, self.document_dict)
+
         if document.referrals_ids:
             for referral in document.referrals_ids:
                 if referral not in self.referrals_counter.keys():

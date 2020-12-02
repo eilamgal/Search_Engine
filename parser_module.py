@@ -27,7 +27,6 @@ def tokenize_url(url):
         return
     long_url = url[url_split + 3:]
     long_url = long_url[:len(long_url) - 2]
-    # tokenized_url = long_url.replace('/', '.').replace('-', '.').split('.')
     tokenized_url = re.sub(r'([#!$%^&?*()={}~`\[\]])|([&=#/\.:\-_]+)', r' \1', long_url).split()
 
     referral_id = "0"
@@ -37,9 +36,7 @@ def tokenize_url(url):
             referral_id = tokenized_url[len(tokenized_url) - 1]
             del tokenized_url[len(tokenized_url) - 1]
 
-    # for w in tokenized_url:
-    #     print(w[0])
-    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url if
+    return [w.lower() if (len(w) > 0 and w[0].islower() or w[0] == "#") else w.upper() for w in tokenized_url if
             w.isascii()], referral_id
 
 
@@ -95,11 +92,11 @@ def get_suffix(num, suffix):
 
 class Parse:
 
-    def __init__(self):
+    def __init__(self, stemming = False):
         self.stop_words = stopwords.words('english')
         # self.entities = spacy.load('en_core_web_sm')
         self.porter = PorterStemmer()
-        self.stem = True
+        self.stem = stemming
 
     def parse_doc(self, doc_as_list):
         """
@@ -118,7 +115,7 @@ class Parse:
 
         months = {month: index for index, month in enumerate(calendar.month_abbr) if month}
         split_date = tweet_date.split(' ')
-        tweet_timestamp = int(datetime(int(split_date[5]), months[split_date[1]], int(split_date[2])))
+        tweet_timestamp = int(datetime(int(split_date[5]), months[split_date[1]], int(split_date[2])).timestamp())
 
         if tweet_id in referrals:
             referrals.remove(tweet_id)
@@ -258,11 +255,11 @@ class Parse:
         text_tokens_without_stopwords = []
 
         if self.stem:
-            text_tokens_without_stopwords = [self.porter.stem(w).lower() if w[0].islower()
+            text_tokens_without_stopwords = [self.porter.stem(w).lower() if w[0].islower() or w[0] == "#"
                                              else self.porter.stem(w).upper()
                                              for w in tokens_list if len(w) > 0 and w not in self.stop_words]
         else:
-            text_tokens_without_stopwords = [w.lower() if w[0].islower()
+            text_tokens_without_stopwords = [w.lower() if w[0].islower() or w[0] == "#"
                                              else w.upper()
                                              for w in tokens_list if len(w) > 0 and w not in self.stop_words]
 
