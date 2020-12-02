@@ -20,7 +20,11 @@ def find_closest_embeddings(embedding, number_of_words, search_in_dict):
     return sorted(search_in_dict.keys(), key=lambda word: norm(embedding, search_in_dict[word]))[1:number_of_words]
 
 
-class GloveStrategy():
+def cosine(embedding, number_of_words, search_in_dict):
+    return sorted(search_in_dict.keys(), key=lambda word: dot(embedding, search_in_dict[word])/(norm(embedding)*norm(search_in_dict[word])))[1:number_of_words]
+
+
+class GloveStrategy:
     def __init__(self, embeddings_path, vocabulary_dict=None):
         stopwords_set = stopwords.words('english')
         self.embeddings_dict = {}
@@ -43,6 +47,7 @@ class GloveStrategy():
         for term in query_as_list:
             if term in embedding_dict.keys():
                 new_query_list.extend(find_closest_embeddings(embedding_dict[term], 4, new_embedding_dict))
+        return new_query_list
 
 
 
