@@ -19,8 +19,8 @@ def run_engine(corpus_path="", output_path="", stemming=False):
     #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
 
     # config = ConfigClass("C:\\Users\\eilam gal\\Search_Engine")
-    # glove_dict = GloveStrategy(
-    #     "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
+    glove_dict = GloveStrategy(
+        "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
 
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse(stemming)
@@ -48,7 +48,7 @@ def run_engine(corpus_path="", output_path="", stemming=False):
     #all_files_paths = glob.glob(config.get__corpusPath()+"\\*\\*.snappy.parquet")
 
     documents_list = [path for path in r.read_file(file_name='date=07-08-2020/covid19_07-08.snappy.parquet')]
-    glove_dict = GloveStrategy("C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
+    # glove_dict = GloveStrategy("C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
     global_start_time = time.time()
     # Iterate over every document in the file
     for idx, document in enumerate(documents_list):
@@ -85,8 +85,14 @@ def load_index():
     return inverted_index
 
 
-def loat_tweet_dict():
+def load_tweet_dict():
     tweet_dict = utils.load_obj("docDictionary")
+    buckets = []
+    for i in range(tweet_dict["tweet_vector_buckets"]):
+        buckets.append(utils.load_obj("bucket"+str((40+i))))
+    for tweet_id in tweet_dict.keys():
+        address = tweet_dict[tweet_id][5]
+        tweet_dict[tweet_id][5] = buckets[address[0]][address[1]]
     return tweet_dict
 
 
@@ -99,13 +105,16 @@ def search_and_rank_query(query, inverted_index, k, glove_dict="", tweet_dict=No
     relevant_docs = searcher.relevant_docs_from_posting(full_query, glove_dict=glove_dict)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     print("IR time: ", time.time()-start_time)
-    return searcher.ranker.retrieve_top_k(ranked_docs, k)
+    start_time = time.time()
+    retrive_list = searcher.ranker.retrieve_top_k(ranked_docs, k)
+    print("time to retrieve_top_k: ", time.time()-start_time)
+    return retrive_list
 
 
 def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
     run_engine(corpus_path, output_path, stemming)
 
-    # tweet_dict = loat_tweet_dict()
+    # tweet_dict = load_tweet_dict()
     # glove_dict = GloveStrategy(
     #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
     #

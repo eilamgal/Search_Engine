@@ -97,6 +97,7 @@ class Indexer:
         self.inverted_idx.update(self.entities_inverted_idx)
         self.__update_referrals()
         self.__save_metadata()
+        self.document_dict["tweet_vector_buckets"] = self.tweet_posting_handler.bucket_index
         utils.save_obj(self.document_dict, "docDictionary")
 
     def __check_entities(self):

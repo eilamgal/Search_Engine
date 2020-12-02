@@ -5,6 +5,9 @@ import math
 from numpy import dot
 from numpy.linalg import norm
 import numpy as np
+import time
+import postings_handler
+from configuration import ConfigClass
 
 
 def bm25(corpus_term_frequency, tweet_term_frequency, avg_tweet_length, tweet_length, corpus_size=10000000, k=1.4,
