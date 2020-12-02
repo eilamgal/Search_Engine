@@ -29,19 +29,23 @@ def euclidean_distance(vector1, vector2):
 
 class Searcher:
 
-    def __init__(self, inverted_index, tweet_dict, avg_tweet_length):
+    def __init__(self, inverted_index, tweet_dict):
         """
         :param inverted_index: dictionary of inverted index
         """
         self.parser = Parse()
         self.ranker = Ranker()
         self.inverted_index = inverted_index
-        self.tweet_dict = tweet_dict###
-        self.avg_tweet_length = avg_tweet_length###
+        self.tweet_dict = tweet_dict
+        self.avg_tweet_length = tweet_dict["avgLength"]
+        self.max_referrals = tweet_dict["maxReferrals"]
+        self.min_timestamp = tweet_dict["minTimestamp"]
+        self.max_timestamp = tweet_dict["maxTimestamp"]
 
     def relevant_docs_from_posting(self, query, glove_dict=None):
         """
         This function loads the posting list and count the amount of relevant documents per term.
+        :param glove_dict: glove file including all word vectors
         :param query: query
         :return: dictionary of relevant documents.
         """
@@ -53,52 +57,40 @@ class Searcher:
                 query_vector = query_vector + (1 / len(query)) * glove_dict[term.upper()]
             elif term in glove_dict.keys():
                 query_vector = query_vector + (1 / len(query)) * glove_dict[term.lower]
-        """"
-        for i in range(len(query)):
-            term = query[i]
-            if term not in self.inverted_index.keys():
-                if term.islower() and term.upper() in self.inverted_index.keys():
-                    query[i] = term.upper()
-                elif term.isupper() and term.lower() in self.inverted_index.keys():
-                    query[i] = term.lower()
-        query_buckets = {}
-        for term in query:
-            if postings_handler.get_bucket_index_by_term(term, 10) not in query_buckets.keys():
-                query_buckets[postings_handler.get_bucket_index_by_term(term, 10)] = []
-            query_buckets[postings_handler.get_bucket_index_by_term(term, 10)].append(term)
-        """
+
         #posting = utils.load_obj("posting")
-        relevant_docs = {} #{doc ID : [0-golve score(some agabric distance), 1-BM25, 2-retweet score, 3-time score(more update better score)]}
+        relevant_docs = {} #{doc ID : [0-golve score(some agabric distance), 1-BM25, 2-retweet score, 3-time score(more relevant -> better score)]}
+
         for term in query:
             #try: # an example of checks that you have to do
-                if term not in self.inverted_index.keys():
-                    if term.islower() and term.upper() in self.inverted_index.keys():
-                        term = term.upper()
-                    elif term.isupper() and term.lower() in self.inverted_index.keys():
-                        term = term.lower()
-                    else:
-                        continue
-                t = time.time()
-                posting = utils.load_obj("bucket"+str(self.inverted_index[term][1][0]))
-                print("time to read buket: ", time.time()-t)
-                #posting_doc = posting[term]
-                posting_doc = posting[self.inverted_index[term][1][1]]
-                for doc_tuple in posting_doc:
-                    doc = doc_tuple[0]
-                    if term == "dog" and doc == "1280986070923051008":
-                        print()
-                    if doc not in relevant_docs.keys():
-                        relevant_docs[doc] = [cosine(query_vector, self.tweet_dict[doc][6]), bm25(self.inverted_index[term][0],
-                                                                                              doc_tuple[1], self.avg_tweet_length, self.tweet_dict[doc][4]),
-                                             self.tweet_dict[doc][1], self.tweet_dict[doc][0]]
-                       #4 relevant_docs[doc] = [0,
-                         #                     bm25(self.inverted_index[term][0],
-                          #                         doc_tuple[1], self.avg_tweet_length, self.tweet_dict[doc][4]),
-                           #                   self.tweet_dict[doc][1], self.tweet_dict[doc][0]]
+            if term not in self.inverted_index.keys():
+                if term.islower() and term.upper() in self.inverted_index.keys():
+                    term = term.upper()
+                elif term.isupper() and term.lower() in self.inverted_index.keys():
+                    term = term.lower()
+                else:
+                    continue
+            posting = utils.load_obj("bucket"+str(self.inverted_index[term][1][0]))
 
-                    else:
-                        relevant_docs[doc][1] += bm25(self.inverted_index[term][0], doc_tuple[1], self.avg_tweet_length,
-                                                      self.tweet_dict[doc_tuple[0]][4])
+            posting_doc = posting[self.inverted_index[term][1][1]]
+            for doc_tuple in posting_doc:
+                doc = doc_tuple[0]
+                # if term == "dog" and doc == "1280986070923051008":
+                # print()
+                term_freq = self.inverted_index[term][0]
+                tweet_length = self.tweet_dict[doc][4]
+                tweet_referrals = self.tweet_dict[doc][1]
+                tweet_timestamp = self.tweet_dict[doc][0]
+                if doc not in relevant_docs.keys():
+                    relevant_docs[doc] = [cosine(query_vector, self.tweet_dict[doc][5]),  # cosine similarity
+                                          bm25(corpus_term_frequency=term_freq, tweet_term_frequency=doc_tuple[1],
+                                               avg_tweet_length=self.avg_tweet_length,
+                                               tweet_length=tweet_length),  # BM25
+                                          (tweet_referrals/self.max_referrals),  # Referrals count
+                                          ((tweet_timestamp - self.min_timestamp)/(self.max_timestamp-self.min_timestamp))]  # Timestamp
+                else:
+                    relevant_docs[doc][1] += bm25(term_freq, doc_tuple[1], self.avg_tweet_length,
+                                                  tweet_length)
             #except:
              #   print('term {} not found in posting'.format(term))
         return relevant_docs

@@ -1,3 +1,6 @@
+import calendar
+from datetime import datetime
+
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
@@ -32,11 +35,12 @@ def tokenize_url(url):
         if (tokenized_url[len(tokenized_url) - 2] == "status"
                 and tokenized_url[len(tokenized_url) - 1].isnumeric()):
             referral_id = tokenized_url[len(tokenized_url) - 1]
-            del tokenized_url[len(tokenized_url)-1]
+            del tokenized_url[len(tokenized_url) - 1]
 
     # for w in tokenized_url:
     #     print(w[0])
-    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url if w.isascii()], referral_id
+    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url if
+            w.isascii()], referral_id
 
 
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
@@ -95,6 +99,7 @@ class Parse:
         self.stop_words = stopwords.words('english')
         # self.entities = spacy.load('en_core_web_sm')
         self.porter = PorterStemmer()
+        self.stem = True
 
     def parse_doc(self, doc_as_list):
         """
@@ -103,7 +108,6 @@ class Parse:
         :return: Document object with corresponding fields.
         """
         tweet_id = doc_as_list[0]
-
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
         url_tokens = tokenize_url(doc_as_list[3])[0]
@@ -112,12 +116,18 @@ class Parse:
         retweet_url_tokens, referral_id2 = tokenize_url(doc_as_list[6])
         referrals = {referral_id1, referral_id2}
 
+        months = {month: index for index, month in enumerate(calendar.month_abbr) if month}
+        split_date = tweet_date.split(' ')
+        tweet_timestamp = int(datetime(int(split_date[5]), months[split_date[1]], int(split_date[2])))
+
         if tweet_id in referrals:
             referrals.remove(tweet_id)
         if referrals == {'0'}:
             referrals = None
         elif '0' in referrals:
             referrals.remove('0')
+
+        # REDUNDANT PARAMETERS (for now)
         # url_indices = doc_as_list[4]
         # retweet_text = doc_as_list[5]
         # retweet_url_tokens = tokenize_url(doc_as_list[6])
@@ -155,7 +165,7 @@ class Parse:
             else:
                 term_dict[term] += 1
         """
-        tweed_length = len(tokenized_text)
+        tweet_length = len(tokenized_text)
         for term in tokenized_text:
             if len(term) < 2:
                 continue
@@ -183,8 +193,8 @@ class Parse:
 
         # document = Document(tweet_id, tweet_date, full_text, url_tokens, retweet_text, retweet_url_tokens, quote_text,
         #                     quote_url_tokens, term_dict, doc_length)
-        document = Document(tweet_id=tweet_id, term_doc_dictionary=term_dict, entities_doc_dictionary=entities_dict,
-                            referral_ids=referrals, tweet_length=tweed_length)
+        document = Document(tweet_id=tweet_id, tweet_timestamp=tweet_timestamp, term_doc_dictionary=term_dict,
+                            entities_doc_dictionary=entities_dict, referral_ids=referrals, tweet_length=tweet_length)
         return document
 
     def parse_text(self, text):
@@ -245,8 +255,15 @@ class Parse:
 
         tokens_list.extend(clean_text.split(' '))
 
-        text_tokens_without_stopwords = [self.porter.stem(w).lower() if w[0].islower()
-                                         else self.porter.stem(w).upper()
-                                         for w in tokens_list if len(w) > 0 and w not in self.stop_words]
+        text_tokens_without_stopwords = []
+
+        if self.stem:
+            text_tokens_without_stopwords = [self.porter.stem(w).lower() if w[0].islower()
+                                             else self.porter.stem(w).upper()
+                                             for w in tokens_list if len(w) > 0 and w not in self.stop_words]
+        else:
+            text_tokens_without_stopwords = [w.lower() if w[0].islower()
+                                             else w.upper()
+                                             for w in tokens_list if len(w) > 0 and w not in self.stop_words]
 
         return text_tokens_without_stopwords, entities

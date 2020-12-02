@@ -1,12 +1,12 @@
 
 class Document:
 
-    def __init__(self, tweet_id, tweet_date=None, full_text=None, url=None, retweet_text=None, retweet_url=None,
+    def __init__(self, tweet_id, tweet_timestamp=None, full_text=None, url=None, retweet_text=None, retweet_url=None,
                  quote_text=None, quote_url=None, term_doc_dictionary=None, doc_length=0, entities_doc_dictionary=None,
                  referral_ids=None, tweet_length=None):
         """
         :param tweet_id: tweet id
-        :param tweet_date: tweet date
+        :param tweet_timestamp: tweet date seconds representation (int)
         :param full_text: full text as string from tweet
         :param url: url
         :param retweet_text: retweet text
@@ -17,7 +17,7 @@ class Document:
         :param doc_length: doc length
         """
         self.tweet_id = tweet_id
-        self.tweet_date = tweet_date
+        self.tweet_timestamp = tweet_timestamp
         self.full_text = full_text
         self.url = url
         self.retweet_text = retweet_text
