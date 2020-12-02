@@ -16,14 +16,22 @@ class Indexer:
         self.debug_tweet_counter = 0
         self.avg_tweet_length = 0
         self.tweet_posting_handler = TweetPostingHandler(config, 40)
+        self.min_timestamp = 2000000000
+        self.max_timestamp = 0
 
     def add_new_doc(self, document, glove_dict=None):
         """
         This function perform indexing process for a document object.
         Saved information is captures via two dictionaries ('inverted index' and 'posting')
+        :param glove_dict:
         :param document: a document need to be indexed.
         :return: -
         """
+
+        if document.tweet_timestamp:
+            self.max_timestamp = max(self.max_timestamp, document.tweet_timestamp)
+            self.min_timestamp = min(self.min_timestamp, document.tweet_timestamp)
+
         entities_doc_dictionary = document.entities_doc_dictionary
         if entities_doc_dictionary:
             for entity in entities_doc_dictionary.keys():
@@ -85,6 +93,7 @@ class Indexer:
         #utils.save_obj(self.entities_postingDict, "bucket"+str(80))
         self.inverted_idx.update(self.entities_inverted_idx)
         self.__update_referrals()
+        self.__save_timestamps()
         utils.save_obj(self.document_dict, "docDictionary")
 
     def __check_entities(self):
@@ -98,5 +107,9 @@ class Indexer:
         for doc_id in self.document_dict.keys():
             if doc_id in self.referrals_counter.keys():
                 self.document_dict[doc_id][1] = self.referrals_counter[doc_id]
+
+    def __save_timestamps(self):
+        self.document_dict["minTimestamp"] = self.min_timestamp
+        self.document_dict["maxTimestamp"] = self.max_timestamp
 
 
