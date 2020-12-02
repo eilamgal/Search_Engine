@@ -16,7 +16,6 @@ class Ranker:
         :param relevant_doc: dictionary of documents that contains at least one term from the query.
         :return: sorted list of documents by score
         """
-        x = relevant_doc.items()
         return sorted(relevant_doc.items(), key=lambda item: GLOVE_WEIGHT*item[1][0]+BM25_WEIGHT*item[1][1]+REFERRAL_WEIGHT
                                                     *item[1][2], reverse=True)# +UPDATE_WEIGHT*item[1][3]
 

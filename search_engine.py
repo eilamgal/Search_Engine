@@ -100,6 +100,7 @@ def search_and_rank_query(query, inverted_index, k):
     #query_as_list = p.parse_sentence(query)
     start_time = time.time()
     tweet_dict = loat_tweet_dect()
+    start_time = time.time()
     print(time.time()-start_time)
     glove_dict = GloveStrategy(
         "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
@@ -108,6 +109,7 @@ def search_and_rank_query(query, inverted_index, k):
     searcher = Searcher(inverted_index, tweet_dict, AVG_TWEET_LENGTH)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list, glove_dict=glove_dict)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
+    print("IR time: ", time.time()-start_time)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 

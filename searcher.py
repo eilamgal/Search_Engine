@@ -14,6 +14,8 @@ def bm25(corpus_term_frequency, tweet_term_frequency, avg_tweet_length, tweet_le
 
 
 def cosine(vector1, vector2):
+    if norm(vector1) == 0 or norm(vector2) == 0:
+        return 0
     return dot(vector1, vector2)/((norm(vector1))*(norm(vector2)))
 
 
