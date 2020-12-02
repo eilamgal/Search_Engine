@@ -35,11 +35,12 @@ def tokenize_url(url):
         if (tokenized_url[len(tokenized_url) - 2] == "status"
                 and tokenized_url[len(tokenized_url) - 1].isnumeric()):
             referral_id = tokenized_url[len(tokenized_url) - 1]
-            del tokenized_url[len(tokenized_url)-1]
+            del tokenized_url[len(tokenized_url) - 1]
 
     # for w in tokenized_url:
     #     print(w[0])
-    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url if w.isascii()], referral_id
+    return [w.lower() if (len(w) > 0 and w[0].islower()) else w.upper() for w in tokenized_url if
+            w.isascii()], referral_id
 
 
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
@@ -98,6 +99,7 @@ class Parse:
         self.stop_words = stopwords.words('english')
         # self.entities = spacy.load('en_core_web_sm')
         self.porter = PorterStemmer()
+        self.stem = True
 
     def parse_doc(self, doc_as_list):
         """
@@ -253,8 +255,15 @@ class Parse:
 
         tokens_list.extend(clean_text.split(' '))
 
-        text_tokens_without_stopwords = [self.porter.stem(w).lower() if w[0].islower()
-                                         else self.porter.stem(w).upper()
-                                         for w in tokens_list if len(w) > 0 and w not in self.stop_words]
+        text_tokens_without_stopwords = []
+
+        if self.stem:
+            text_tokens_without_stopwords = [self.porter.stem(w).lower() if w[0].islower()
+                                             else self.porter.stem(w).upper()
+                                             for w in tokens_list if len(w) > 0 and w not in self.stop_words]
+        else:
+            text_tokens_without_stopwords = [w.lower() if w[0].islower()
+                                             else w.upper()
+                                             for w in tokens_list if len(w) > 0 and w not in self.stop_words]
 
         return text_tokens_without_stopwords, entities
