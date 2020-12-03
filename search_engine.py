@@ -58,9 +58,7 @@ def run_engine(corpus_path="testData", output_path="posting", stemming=True):
         # print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
     """
 
-    # glove_dict = GloveStrategy("glove.twitter.27B.25d.txt").embeddings_dict  # Oded
-
-    # glove_dict = GloveStrategy("glove.twitter.27B.25d.txt").embeddings_dict  # Eilam
+    # glove_dict = GloveStrategy("glove.twitter.27B.25d.txt").embeddings_dict
 
     glove_dict = GloveStrategy("../../../../glove.twitter.27B.25d.txt").embeddings_dict  # Web system
 
