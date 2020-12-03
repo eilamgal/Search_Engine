@@ -118,13 +118,15 @@ def search_and_rank_query(query, inverted_index, k, glove_dict="", tweet_dict=No
 # def main(corpus_path="testData", output_path="posting", stemming=True, queries='', num_docs_to_retrieve=10):
 def main():
 
-    # run_engine()
-    start = time.time()
+    run_engine()
+
+    # start = time.time()
     tweet_dict = load_tweet_dict()
-    print(time.time()-start)
+    # print(time.time()-start)
+
     # glove_dict = GloveStrategy(
     #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
-    #
+    k
     # query = input("Please enter a query: ")
     # k = int(input("Please enter number of docs to retrieve: "))
     # inverted_index = load_index()
