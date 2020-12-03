@@ -7,7 +7,7 @@ class ConfigClass:
         self.savedFileMainFolder = ''
         self.saveFilesWithStem = self.savedFileMainFolder + "/WithStem"
         self.saveFilesWithoutStem = self.savedFileMainFolder + "/WithoutStem"
-        print('Project was created successfully..')
+        # print('Project was created successfully..')
 
     def get_corpusPath(self):
         return self.corpusPath

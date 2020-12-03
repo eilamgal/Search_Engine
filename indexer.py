@@ -102,9 +102,10 @@ class Indexer:
         self.__update_referrals()
         self.tweet_vectors_handler.finish_indexing(self.document_dict)
 
-        # KEEP THOSE 2 LINES LAST
+        # KEEP THOSE LINES LAST
         self.__save_metadata()
         utils.save_obj(self.document_dict, "docDictionary")
+        utils.save_obj(self.inverted_idx, "inverted_idx")
 
     def __check_entities(self):
         for entity in self.entities_inverted_idx.keys():

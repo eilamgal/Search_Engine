@@ -7,78 +7,83 @@ from indexer import Indexer
 from searcher import Searcher
 import utils
 from glove import GloveStrategy
+import glob
 
 
 def run_engine(corpus_path="testData", output_path="posting", stemming=True):
     """
     :return:
     """
-    number_of_documents = 0
-    config = ConfigClass(corpus_path, number_of_term_buckets=10, number_of_entities_buckets=2)
 
-    glove_dict = GloveStrategy(
-        "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
+    """
+    # glove_dict = GloveStrategy(
+    #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
 
     # glove_dict = GloveStrategy(
     #     "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
 
+    config = ConfigClass(corpus_path, number_of_term_buckets=10, number_of_entities_buckets=2)
     r = ReadFile(corpus_path=config.get_corpusPath())
     p = Parse(stemming)
     indexer = Indexer(config)
-    """
-    all_files_paths = glob.glob(config.get__corpusPath()+"\\*\\*.snappy.parquet")
-    all_files_names = [file_name[-44:] for file_name in all_files_paths]
-    for file_path in all_files_names:
-        print(file_path)
-        documents_list = [path for path in r.read_file(file_name=file_path)]
-        global_start_time = time.time()
+    glove_dict = GloveStrategy("../../../../glove.twitter.27B.25d.txt").embeddings_dict
+    all_files_paths = glob.glob(config.get_corpusPath() + "\\*\\*.snappy.parquet")
+    all_files_names = [file_name[file_name.find("\\") + 1:] for file_name in all_files_paths]
+
+    for file_name in all_files_names:
+        documents_list = [path for path in r.read_file(file_name=file_name)]
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
+            #  if len(indexer.inverted_idx.keys()) % 10000 == 0:
+            #      print(len(indexer.inverted_idx.keys()))
+
             # parse the document
             # start_time = time.time()
-            if len(indexer.inverted_idx.keys()) % 10000 == 0:
-                print(len(indexer.inverted_idx.keys()))
             parsed_document = p.parse_doc(document)
             #  print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
-            # start_time = time.time()
-            number_of_documents += 1
+
             # index the document data
+            # start_time = time.time()
             indexer.add_new_doc(parsed_document, glove_dict)
+            # print('Finished indexing document after {0} seconds.'.format(time.time() - start_time))
+
+            number_of_documents += 1
+
+        # print('Finished parsing and indexing after {0} seconds. Starting to export files'
+        #       .format(time.time()-global_start_time))
+        # print(len(indexer.inverted_idx.keys()))
+        # print(len(indexer.entities_inverted_idx.keys()))
+        # print("indexer.inverted_idx size: " + str(sys.getsizeof(indexer.inverted_idx)))
+        # print("indexer.entities_inverted_idx size: " + str(sys.getsizeof(indexer.entities_inverted_idx)))
+        # print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
     """
-    # all_files_paths = glob.glob(config.get__corpusPath()+"\\*\\*.snappy.parquet")
 
-    documents_list = [path for path in r.read_file(file_name='date=07-08-2020/covid19_07-08.snappy.parquet')]
-    global_start_time = time.time()
-    # Iterate over every document in the file
-    for idx, document in enumerate(documents_list):
-        #  if len(indexer.inverted_idx.keys()) % 10000 == 0:
-        #      print(len(indexer.inverted_idx.keys()))
+    # glove_dict = GloveStrategy("glove.twitter.27B.25d.txt").embeddings_dict  # Oded
 
-        # parse the document
-        # start_time = time.time()
-        parsed_document = p.parse_doc(document)
-        #  print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
+    # glove_dict = GloveStrategy("glove.twitter.27B.25d.txt").embeddings_dict  # Eilam
 
-        # index the document data
-        # start_time = time.time()
-        indexer.add_new_doc(parsed_document, glove_dict)
-        # print('Finished indexing document after {0} seconds.'.format(time.time() - start_time))
+    glove_dict = GloveStrategy("../../../../glove.twitter.27B.25d.txt").embeddings_dict  # Web system
 
-        number_of_documents += 1
+    config = ConfigClass(corpus_path, number_of_term_buckets=10, number_of_entities_buckets=2)
+    r = ReadFile(corpus_path=config.get_corpusPath())
+    p = Parse(stemming)
+    indexer = Indexer(config)
 
-    print('Finished parsing and indexing after {0} seconds. Starting to export files'
-          .format(time.time()-global_start_time))
-    print(len(indexer.inverted_idx.keys()))
-    print(len(indexer.entities_inverted_idx.keys()))
-    print("indexer.inverted_idx size: " + str(sys.getsizeof(indexer.inverted_idx)))
-    print("indexer.entities_inverted_idx size: " + str(sys.getsizeof(indexer.entities_inverted_idx)))
-#    print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
-   # """
+    all_files_paths = glob.glob(config.get_corpusPath() + "\\*\\*.snappy.parquet")
+    all_files_names = [file_name[file_name.find("\\") + 1:] for file_name in all_files_paths]
+
+    start_time = time.time()
+    for file_name in all_files_names:
+        documents_list = [path for path in r.read_file(file_name=file_name)]
+
+        # Iterate over every document in the file
+        for idx, document in enumerate(documents_list):
+            parsed_document = p.parse_doc(document)
+            indexer.add_new_doc(parsed_document, glove_dict)
+    total_time = time.time() - start_time
+
     indexer.finish_indexing()
-    #avg_tweet_length = indexer.avg_tweet_length
-    utils.save_obj(indexer.inverted_idx, "inverted_idx")
-
-    #utils.save_obj(indexer.postingDict, "posting")
+    # print('Finished parsing and indexing after {0} seconds. Starting to export files'.format(total_time))
 
 
 def load_index():
@@ -91,7 +96,7 @@ def load_tweet_dict():
     tweet_dict = utils.load_obj("docDictionary")
     buckets = []
     for i in range(tweet_dict["metadata"]["tweet_vector_buckets"]):
-        buckets.append(utils.load_obj("avgVector"+str(i)))
+        buckets.append(utils.load_obj("avgVector" + str(i)))
     for tweet_id in tweet_dict.keys():
         if tweet_id == "metadata":
             continue
@@ -108,25 +113,24 @@ def search_and_rank_query(query, inverted_index, k, glove_dict="", tweet_dict=No
     searcher = Searcher(inverted_index, tweet_dict)
     relevant_docs = searcher.relevant_docs_from_posting(full_query, glove_dict=glove_dict)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
-    print("IR time: ", time.time()-start_time)
+    print("IR time: ", time.time() - start_time)
     start_time = time.time()
     retrive_list = searcher.ranker.retrieve_top_k(ranked_docs, k)
-    print("time to retrieve_top_k: ", time.time()-start_time)
+    print("time to retrieve_top_k: ", time.time() - start_time)
     return retrive_list
 
 
-# def main(corpus_path="testData", output_path="posting", stemming=True, queries='', num_docs_to_retrieve=10):
-def main():
-
-    run_engine()
+# def main():
+def main(corpus_path="testData", output_path="posting", stemming=True, queries='', num_docs_to_retrieve=10):
+    # run_engine()
+    run_engine(corpus_path=corpus_path, output_path=output_path, stemming=stemming)
 
     # start = time.time()
-    tweet_dict = load_tweet_dict()
+    # tweet_dict = load_tweet_dict()
     # print(time.time()-start)
-
+    #
     # glove_dict = GloveStrategy(
     #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
-    k
     # query = input("Please enter a query: ")
     # k = int(input("Please enter number of docs to retrieve: "))
     # inverted_index = load_index()
