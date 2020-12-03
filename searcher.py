@@ -37,10 +37,10 @@ class Searcher:
         self.ranker = Ranker()
         self.inverted_index = inverted_index
         self.tweet_dict = tweet_dict
-        self.avg_tweet_length = tweet_dict["avgLength"]
-        self.max_referrals = tweet_dict["maxReferrals"]
-        self.min_timestamp = tweet_dict["minTimestamp"]
-        self.max_timestamp = tweet_dict["maxTimestamp"]
+        self.avg_tweet_length = tweet_dict["metadata"]["avgLength"]
+        self.max_referrals = tweet_dict["metadata"]["maxReferrals"]
+        self.min_timestamp = tweet_dict["metadata"]["minTimestamp"]
+        self.max_timestamp = tweet_dict["metadata"]["maxTimestamp"]
 
     def relevant_docs_from_posting(self, query, glove_dict=None):
         """
@@ -59,10 +59,9 @@ class Searcher:
                 query_vector = query_vector + (1 / len(query)) * glove_dict[term.lower]
 
         #posting = utils.load_obj("posting")
-        relevant_docs = {} #{doc ID : [0-golve score(some agabric distance), 1-BM25, 2-retweet score, 3-time score(more relevant -> better score)]}
+        relevant_docs = {} #{doc ID : [0-glove score(some agabric distance), 1-BM25, 2-retweet score, 3-time score(more relevant -> better score)]}
 
         for term in query:
-            #try: # an example of checks that you have to do
             if term not in self.inverted_index.keys():
                 if term.islower() and term.upper() in self.inverted_index.keys():
                     term = term.upper()
@@ -81,8 +80,14 @@ class Searcher:
                 tweet_length = self.tweet_dict[doc][4]
                 tweet_referrals = self.tweet_dict[doc][1]
                 tweet_timestamp = self.tweet_dict[doc][0]
+
+                # TODO - load vector from file (file name is avgVector+index not bucket+index!)
+                #        tweet_vector = utils.load_obj("avgVector"+str(self.tweet_dict[term][5][0]))
+                # Nevermind - i think i saw it in load_dict already
+                tweet_vector = self.tweet_dict[doc][5]
+
                 if doc not in relevant_docs.keys():
-                    relevant_docs[doc] = [cosine(query_vector, self.tweet_dict[doc][5]),  # cosine similarity
+                    relevant_docs[doc] = [cosine(query_vector, tweet_vector),  # cosine similarity
                                           bm25(corpus_term_frequency=term_freq, tweet_term_frequency=doc_tuple[1],
                                                avg_tweet_length=self.avg_tweet_length,
                                                tweet_length=tweet_length),  # BM25

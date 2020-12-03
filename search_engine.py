@@ -9,20 +9,20 @@ import utils
 from glove import GloveStrategy
 
 
-def run_engine(corpus_path="", output_path="", stemming=False):
+def run_engine(corpus_path="testData", output_path="posting", stemming=True):
     """
     :return:
     """
     number_of_documents = 0
-    config = ConfigClass(corpus_path)
-    # glove_dict = GloveStrategy(
-    #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
+    config = ConfigClass(corpus_path, number_of_term_buckets=10, number_of_entities_buckets=2)
 
-    # config = ConfigClass("C:\\Users\\eilam gal\\Search_Engine")
     glove_dict = GloveStrategy(
-        "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
+        "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
 
-    r = ReadFile(corpus_path=config.get__corpusPath())
+    # glove_dict = GloveStrategy(
+    #     "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
+
+    r = ReadFile(corpus_path=config.get_corpusPath())
     p = Parse(stemming)
     indexer = Indexer(config)
     """
@@ -45,25 +45,27 @@ def run_engine(corpus_path="", output_path="", stemming=False):
             # index the document data
             indexer.add_new_doc(parsed_document, glove_dict)
     """
-    #all_files_paths = glob.glob(config.get__corpusPath()+"\\*\\*.snappy.parquet")
+    # all_files_paths = glob.glob(config.get__corpusPath()+"\\*\\*.snappy.parquet")
 
     documents_list = [path for path in r.read_file(file_name='date=07-08-2020/covid19_07-08.snappy.parquet')]
-    # glove_dict = GloveStrategy("C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
     global_start_time = time.time()
     # Iterate over every document in the file
     for idx, document in enumerate(documents_list):
+        #  if len(indexer.inverted_idx.keys()) % 10000 == 0:
+        #      print(len(indexer.inverted_idx.keys()))
+
         # parse the document
-       # start_time = time.time()
-        if len(indexer.inverted_idx.keys()) % 10000 == 0:
-            print(len(indexer.inverted_idx.keys()))
+        # start_time = time.time()
         parsed_document = p.parse_doc(document)
-      #  print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
-        #start_time = time.time()
-        number_of_documents += 1
+        #  print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
+
         # index the document data
+        # start_time = time.time()
         indexer.add_new_doc(parsed_document, glove_dict)
-     #   print('Finished indexing document after {0} seconds.'.format(time.time() - start_time))
-    #    print()
+        # print('Finished indexing document after {0} seconds.'.format(time.time() - start_time))
+
+        number_of_documents += 1
+
     print('Finished parsing and indexing after {0} seconds. Starting to export files'
           .format(time.time()-global_start_time))
     print(len(indexer.inverted_idx.keys()))
@@ -88,9 +90,11 @@ def load_index():
 def load_tweet_dict():
     tweet_dict = utils.load_obj("docDictionary")
     buckets = []
-    for i in range(tweet_dict["tweet_vector_buckets"]):
-        buckets.append(utils.load_obj("bucket"+str((40+i))))
+    for i in range(tweet_dict["metadata"]["tweet_vector_buckets"]):
+        buckets.append(utils.load_obj("avgVector"+str(i)))
     for tweet_id in tweet_dict.keys():
+        if tweet_id == "metadata":
+            continue
         address = tweet_dict[tweet_id][5]
         tweet_dict[tweet_id][5] = buckets[address[0]][address[1]]
     return tweet_dict
@@ -111,10 +115,13 @@ def search_and_rank_query(query, inverted_index, k, glove_dict="", tweet_dict=No
     return retrive_list
 
 
-def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
-    run_engine(corpus_path, output_path, stemming)
+# def main(corpus_path="testData", output_path="posting", stemming=True, queries='', num_docs_to_retrieve=10):
+def main():
 
-    # tweet_dict = load_tweet_dict()
+    # run_engine()
+    start = time.time()
+    tweet_dict = load_tweet_dict()
+    print(time.time()-start)
     # glove_dict = GloveStrategy(
     #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
     #
