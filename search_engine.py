@@ -58,9 +58,9 @@ def run_engine(corpus_path="testData", output_path="posting", stemming=True):
         # print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
     """
 
-    # glove_dict = GloveStrategy("glove.twitter.27B.25d.txt").embeddings_dict
+    glove_dict = GloveStrategy("glove.twitter.27B.25d.txt").embeddings_dict
 
-    glove_dict = GloveStrategy("../../../../glove.twitter.27B.25d.txt").embeddings_dict  # Web system
+    #glove_dict = GloveStrategy("../../../../glove.twitter.27B.25d.txt").embeddings_dict  # Web system
 
     config = ConfigClass(corpus_path, number_of_term_buckets=10, number_of_entities_buckets=2)
     r = ReadFile(corpus_path=config.get_corpusPath())
@@ -71,15 +71,18 @@ def run_engine(corpus_path="testData", output_path="posting", stemming=True):
     all_files_names = [file_name[file_name.find("\\") + 1:] for file_name in all_files_paths]
 
     start_time = time.time()
+    file_counter = 0
     for file_name in all_files_names:
+        file_start_time = time.time()
+        print("start file :", file_counter)
         documents_list = [path for path in r.read_file(file_name=file_name)]
-
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
             parsed_document = p.parse_doc(document)
             indexer.add_new_doc(parsed_document, glove_dict)
+        print("end file number ", file_counter, " in: ", time.time() - file_start_time)
+        file_counter += 1
     total_time = time.time() - start_time
-
     indexer.finish_indexing()
     # print('Finished parsing and indexing after {0} seconds. Starting to export files'.format(total_time))
 

@@ -47,7 +47,7 @@ class Indexer:
                                                           self.entities_inverted_idx)
         document_dictionary = document.term_doc_dictionary
 
-        self.avg_tweet_length += (1/10000000)*document.doc_length  # TODO - change to sum and divide by dictionary size at the end?
+        self.avg_tweet_length += (1/10000000)*document.doc_length  # TODO - change to sum and divide by dictionary size at the end
         self.document_dict[document.tweet_id] = [document.tweet_timestamp,
                                                  0,  # referrals
                                                  len(document_dictionary.keys()) + len(entities_doc_dictionary.keys()),  # unique words

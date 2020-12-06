@@ -2,7 +2,8 @@ from bucket import Bucket
 import pickle
 import utils
 import os
-MAX_SIZE = 1000000
+import time
+MAX_SIZE = 10000000
 THRESHOLD = 200000
 BUCKET_ID = 0
 abc_frequency_dict = {'a': 1.7, 'b': 4.4, 'c': 5.2, 'd': 3.2, 'e': 2.8, 'f': 4, 'g': 1.6, 'h': 4.2, 'i': 7.3, 'j': 7.3,
@@ -49,8 +50,10 @@ class PostingsHandler:
             self.buckets_mapping[i] = first_bucket_index + i
 
     def __flush_bucket(self, inverted_idx, bucket_index):
-        # print("disk operation")
+        print("disk operation")
+        start_time = time.time()
         new_posting = utils.load_obj("bucket" + str(self.buckets_mapping[bucket_index]))
+        print("read time = ",time.time()-start_time)
         for term in self.buckets[bucket_index].get_dict_terms():
             if inverted_idx[term][1][1] < 0:
                 new_posting.append([])
@@ -58,7 +61,9 @@ class PostingsHandler:
             new_posting[inverted_idx[term][1][1]].extend(self.buckets[bucket_index].get_term_posting(term))
         self.size -= self.buckets[bucket_index].get_size()
         self.buckets[bucket_index].clean_bucket()
+        start_time = time.time()
         utils.save_obj(new_posting, "bucket" + str(self.buckets_mapping[bucket_index]))
+        print("write time = ", time.time()-start_time)
 
     def __equal_width_buckets(self, number_of_buckets):
         for key in abc_frequency_dict.keys():

@@ -1,14 +1,9 @@
 import calendar
-from datetime import datetime
-
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem import PorterStemmer
-from document import Document
 import re
-import spacy
+from datetime import datetime
+from nltk.corpus import stopwords
+from document import Document
 from nltk import PorterStemmer
-import time
 
 
 def remove_urls(full_text):
@@ -92,9 +87,8 @@ def get_suffix(num, suffix):
 
 class Parse:
 
-    def __init__(self, stemming = False):
+    def __init__(self, stemming=False):
         self.stop_words = stopwords.words('english')
-        # self.entities = spacy.load('en_core_web_sm')
         self.porter = PorterStemmer()
         self.stem = stemming
 
