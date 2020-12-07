@@ -1,7 +1,7 @@
 GLOVE_WEIGHT = 0.3
 BM25_WEIGHT = 0.2
 REFERRAL_WEIGHT = 0.3
-RELEVANCE_WEIGHT = 0.3
+RELEVANCE_WEIGHT = 0.2
 
 
 class Ranker:
@@ -29,7 +29,7 @@ class Ranker:
         :param k: Number of top document to return
         :return: list of relevant document
         """
-        k = min(2000, len(sorted_relevant_doc))
+        k = min(k, len(sorted_relevant_doc))
         return sorted_relevant_doc[:k]
 
     def __inner_product(self):

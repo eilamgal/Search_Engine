@@ -16,6 +16,7 @@ class TweetVectorsHandler:
         for term in self.bucket.get_dict_terms():
             new_posting.append(self.bucket.get_term_posting(term)[0])
             doc_dictionary[term][5] = (self.bucket_index, len(new_posting) - 1)
+
         self.size = 0
         self.bucket.clean_bucket()
         start_time = time.time()

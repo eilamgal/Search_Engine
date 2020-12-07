@@ -34,8 +34,8 @@ def run_engine(corpus_path="testData", output_path="posting", stemming=True):
         documents_list = [path for path in r.read_file(file_name=file_name)]
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
-            #  if len(indexer.inverted_idx.keys()) % 10000 == 0:
-            #      print(len(indexer.inverted_idx.keys()))
+            #  if len(indexer.inverted_index.keys()) % 10000 == 0:
+            #      print(len(indexer.inverted_index.keys()))
 
             # parse the document
             # start_time = time.time()
@@ -51,9 +51,9 @@ def run_engine(corpus_path="testData", output_path="posting", stemming=True):
 
         # print('Finished parsing and indexing after {0} seconds. Starting to export files'
         #       .format(time.time()-global_start_time))
-        # print(len(indexer.inverted_idx.keys()))
+        # print(len(indexer.inverted_index.keys()))
         # print(len(indexer.entities_inverted_idx.keys()))
-        # print("indexer.inverted_idx size: " + str(sys.getsizeof(indexer.inverted_idx)))
+        # print("indexer.inverted_index size: " + str(sys.getsizeof(indexer.inverted_index)))
         # print("indexer.entities_inverted_idx size: " + str(sys.getsizeof(indexer.entities_inverted_idx)))
         # print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
     """
@@ -75,7 +75,7 @@ def run_engine(corpus_path="testData", output_path="posting", stemming=True):
     for file_name in all_files_names:
         file_start_time = time.time()
         print("start file :", file_counter)
-        documents_list = [path for path in r.read_file(file_name=file_name)]
+        documents_list = [document for document in r.read_file(file_name=file_name)]
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
             parsed_document = p.parse_doc(document)
@@ -83,13 +83,14 @@ def run_engine(corpus_path="testData", output_path="posting", stemming=True):
         print("end file number ", file_counter, " in: ", time.time() - file_start_time)
         file_counter += 1
     total_time = time.time() - start_time
+
     indexer.finish_indexing()
     # print('Finished parsing and indexing after {0} seconds. Starting to export files'.format(total_time))
 
 
 def load_index():
-    print('Load inverted index')
-    inverted_index = utils.load_obj("inverted_idx")
+    # print('Load inverted index')
+    inverted_index = utils.load_obj("inverted_index")
     return inverted_index
 
 
@@ -114,10 +115,10 @@ def search_and_rank_query(query, inverted_index, k, glove_dict="", tweet_dict=No
     searcher = Searcher(inverted_index, tweet_dict)
     relevant_docs = searcher.relevant_docs_from_posting(full_query, glove_dict=glove_dict)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
-    print("IR time: ", time.time() - start_time)
+    # print("IR time: ", time.time() - start_time)
     start_time = time.time()
     retrive_list = searcher.ranker.retrieve_top_k(ranked_docs, k)
-    print("time to retrieve_top_k: ", time.time() - start_time)
+    # print("time to retrieve_top_k: ", time.time() - start_time)
     return retrive_list
 
 

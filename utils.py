@@ -24,7 +24,7 @@ def load_obj(name):
 
 def load_inverted_index(output_path=None):
     if output_path:
-        output_path = output_path+"\\inverted_idx"
+        output_path = output_path+"\\inverted_index"
     else:
-        output_path = "inverted_idx"
+        output_path = "inverted_index"
     return load_obj(output_path)

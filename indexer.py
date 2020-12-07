@@ -7,6 +7,8 @@ from tweet_vectors_handler import TweetVectorsHandler
 class Indexer:
 
     def __init__(self, config):
+        self.total_tweet_lengths = 0
+        self.number_of_tweets = 0
         self.config = config
         self.document_dict = {}  # {id : [0-timestamp, 1-referrals, 2-uniques, 3-max_tf, 4-length, 5- vector_pos]}
         self.inverted_idx = {}  # {term : [idf(term), address = (posting #, line #)]}
@@ -15,7 +17,6 @@ class Indexer:
         self.entities_posting_handler = PostingsHandler(config, contains="entities")
         self.tweet_vectors_handler = TweetVectorsHandler(config)
         self.referrals_counter = {}
-        self.debug_tweet_counter = 0
         self.avg_tweet_length = 0
         self.min_timestamp = 2000000000
         self.max_timestamp = 0
@@ -31,6 +32,7 @@ class Indexer:
         :param glove_dict: Glove dictionary including all word vectors
         :param document: a document need to be indexed.
         """
+        self.number_of_tweets += 1
 
         if document.tweet_timestamp:
             self.max_timestamp = max(self.max_timestamp, document.tweet_timestamp)
@@ -47,7 +49,7 @@ class Indexer:
                                                           self.entities_inverted_idx)
         document_dictionary = document.term_doc_dictionary
 
-        self.avg_tweet_length += (1/10000000)*document.doc_length  # TODO - change to sum and divide by dictionary size at the end
+        self.total_tweet_lengths += document.tweet_length
         self.document_dict[document.tweet_id] = [document.tweet_timestamp,
                                                  0,  # referrals
                                                  len(document_dictionary.keys()) + len(entities_doc_dictionary.keys()),  # unique words
@@ -58,28 +60,23 @@ class Indexer:
         tweet_vector = numpy.full(25, 0)
 
         for term in document_dictionary.keys():
-            # try:
-                # Update inverted index and posting
-                frequency = document_dictionary[term]
-                if term in glove_dict.keys():
-                    tweet_vector = tweet_vector + (frequency/document.tweet_length) * glove_dict[term]
-                if term.lower() not in self.inverted_idx.keys() and term.upper() not in self.inverted_idx.keys():
-                    self.inverted_idx[term] = [1, (-1, -1)]
-                elif term.isupper() and term.lower() in self.inverted_idx.keys():
-                    self.inverted_idx[term.lower()][0] += 1
-                    term = term.lower()
-                elif term.islower() and term.upper() in self.inverted_idx.keys():
-                    self.inverted_idx[term] = [self.inverted_idx[term.upper()][0] + 1,
-                                               self.inverted_idx[term.upper()][1]]
-                    del self.inverted_idx[term.upper()]
-                    self.posting_handler.change_term_case(term.upper(), term)
-                else:
-                    self.inverted_idx[term][0] += 1
-                self.posting_handler.append_term(term, document.tweet_id, frequency, self.inverted_idx)
-            # except:
-            #     print('problem with the following key {}'.format(term) + " ID = " + document.tweet_id)
-
-        # self.document_dict[document.tweet_id][5] = tweet_vector  # OLD METHOD
+            # Update inverted index and posting
+            frequency = document_dictionary[term]
+            if term in glove_dict.keys():
+                tweet_vector = tweet_vector + (frequency/document.tweet_length) * glove_dict[term]
+            if term.lower() not in self.inverted_idx.keys() and term.upper() not in self.inverted_idx.keys():
+                self.inverted_idx[term] = [1, (-1, -1)]
+            elif term.isupper() and term.lower() in self.inverted_idx.keys():
+                self.inverted_idx[term.lower()][0] += 1
+                term = term.lower()
+            elif term.islower() and term.upper() in self.inverted_idx.keys():
+                self.inverted_idx[term] = [self.inverted_idx[term.upper()][0] + 1,
+                                           self.inverted_idx[term.upper()][1]]
+                del self.inverted_idx[term.upper()]
+                self.posting_handler.change_term_case(term.upper(), term)
+            else:
+                self.inverted_idx[term][0] += 1
+            self.posting_handler.append_term(term, document.tweet_id, frequency, self.inverted_idx)
 
         self.tweet_vectors_handler.append_tweet(document.tweet_id, tweet_vector, self.document_dict)
 
@@ -90,12 +87,9 @@ class Indexer:
                 else:
                     self.referrals_counter[referral] += 1
                     self.max_referrals = max(self.referrals_counter[referral], self.max_referrals)
-        """
-        self.debug_tweet_counter += 1
-        if self.debug_tweet_counter % 1000000 == 0:
-            print(self.debug_tweet_counter)
-        """
+
     def finish_indexing(self):
+        self.avg_tweet_length = self.total_tweet_lengths / self.number_of_tweets
         self.posting_handler.finish_indexing(self.inverted_idx)
         self.__check_entities()
         self.inverted_idx.update(self.entities_inverted_idx)
@@ -105,7 +99,7 @@ class Indexer:
         # KEEP THOSE LINES LAST
         self.__save_metadata()
         utils.save_obj(self.document_dict, "docDictionary")
-        utils.save_obj(self.inverted_idx, "inverted_idx")
+        utils.save_obj(self.inverted_idx, "inverted_index")
 
     def __check_entities(self):
         for entity in self.entities_inverted_idx.keys():
@@ -120,12 +114,6 @@ class Indexer:
                 self.document_dict[doc_id][1] = self.referrals_counter[doc_id]
 
     def __save_metadata(self):
-        # self.document_dict["minTimestamp"] = self.min_timestamp
-        # self.document_dict["maxTimestamp"] = self.max_timestamp
-        # self.document_dict["avgLength"] = self.avg_tweet_length
-        # self.document_dict["maxReferrals"] = self.max_referrals
-        # self.document_dict["tweet_vector_buckets"] = self.tweet_vectors_handler.bucket_index
-
         self.document_dict["metadata"] = {"minTimestamp": self.min_timestamp,
                                           "maxTimestamp": self.max_timestamp,
                                           "avgLength": self.avg_tweet_length,
