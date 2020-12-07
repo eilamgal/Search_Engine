@@ -3,7 +3,7 @@ from glove import GloveStrategy
 from reader import ReadFile
 import search_engine
 import csv
-
+import utils
 
 
 GLOVE_WEIGHT = 0.3
@@ -13,7 +13,7 @@ RELEVANCE_WEIGHT = 0.3
 
 
 if __name__ == '__main__':
-    inverted_index = search_engine.load_index()
+    inverted_index = utils.load_inverted_index()
     tweet_dict = search_engine.load_tweet_dict()
     reader = ReadFile(corpus_path="testData")
     queries = reader.load_queries("queries.txt")
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     results_writer.writeheader()
 
     for idx, query in enumerate(queries):
-        results = search_engine.search_and_rank_query(query, inverted_index, 5, glove_dict, tweet_dict)
+        results = search_engine.search_and_rank_query(query, inverted_index, 2000, glove_dict, tweet_dict)
         for result in results:
             result[1].append(GLOVE_WEIGHT*result[1][0]
                              + BM25_WEIGHT*result[1][1]
