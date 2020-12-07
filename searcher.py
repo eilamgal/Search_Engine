@@ -12,6 +12,8 @@ from configuration import ConfigClass
 
 def bm25(corpus_term_frequency, tweet_term_frequency, avg_tweet_length, tweet_length, corpus_size=10000000, k=1.4,
          b=0.75, base=10):
+    avg_tweet_length = 26.0 if avg_tweet_length == 0 else avg_tweet_length
+
     return ((tweet_term_frequency * (1 + k)) / (
                 tweet_term_frequency + k * (1 - b + b * (tweet_length / avg_tweet_length)))) * math.log(
         (corpus_size + 1) / corpus_term_frequency, base)
@@ -92,7 +94,7 @@ class Searcher:
                                                avg_tweet_length=self.avg_tweet_length,
                                                tweet_length=tweet_length),  # BM25
                                           (tweet_referrals/self.max_referrals),  # Referrals count
-                                          ((tweet_timestamp - self.min_timestamp)/(self.max_timestamp-self.min_timestamp))]  # Timestamp
+                                          ((tweet_timestamp - self.min_timestamp)/(self.max_timestamp - self.min_timestamp))]  # Timestamp
                 else:
                     relevant_docs[doc][1] += bm25(term_freq, doc_tuple[1], self.avg_tweet_length,
                                                   tweet_length)

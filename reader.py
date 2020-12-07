@@ -17,3 +17,8 @@ class ReadFile:
         df = pd.read_parquet(full_path, engine="pyarrow")
 
         return df.values.tolist()
+
+    def load_queries(self, queries_file):
+        with open(queries_file, encoding='utf8') as f:
+            content = f.read().splitlines()
+        return [x[(x.find('.') + 2):] for x in content]

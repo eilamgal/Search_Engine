@@ -6,35 +6,6 @@ from document import Document
 from nltk import PorterStemmer
 
 
-def remove_urls(full_text):
-    if not full_text:
-        return
-    split = full_text.split(' ')
-    clean = [token for token in split if "http" not in token.lower()]
-    return ' '.join(clean)
-
-
-def tokenize_url(url):
-    if url == "{}" or url is None:
-        return None, "0"
-    url_split = url.find("\":\"")
-    if url_split == -1:
-        return
-    long_url = url[url_split + 3:]
-    long_url = long_url[:len(long_url) - 2]
-    tokenized_url = re.sub(r'([#!$%^&?*()={}~`\[\]])|([&=#/\.:\-_]+)', r' \1', long_url).split()
-
-    referral_id = "0"
-    if len(tokenized_url) >= 2:
-        if (tokenized_url[len(tokenized_url) - 2] == "status"
-                and tokenized_url[len(tokenized_url) - 1].isnumeric()):
-            referral_id = tokenized_url[len(tokenized_url) - 1]
-            del tokenized_url[len(tokenized_url) - 1]
-
-    return [w.lower() if (len(w) > 0 and w[0].islower() or w[0] == "#") else w.upper() for w in tokenized_url if
-            w.isascii()], referral_id
-
-
 def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
     if hashtag.find(".") > 0:
         hashtag = hashtag[0:hashtag.find(".")]
@@ -85,12 +56,36 @@ def get_suffix(num, suffix):
     return num, flag
 
 
+CUSTOM_STOPWORDS = ["http", "https", "www", "com", "amp;"]
+
+
 class Parse:
 
     def __init__(self, stemming=False):
         self.stop_words = stopwords.words('english')
+        self.stop_words.extend(CUSTOM_STOPWORDS)
         self.porter = PorterStemmer()
         self.stem = stemming
+
+    def tokenize_url(self, url):
+        if url == "{}" or url is None:
+            return None, "0"
+        url_split = url.find("\":\"")
+        if url_split == -1:
+            return
+        long_url = url[url_split + 3:]
+        long_url = long_url[:len(long_url) - 2]
+        tokenized_url = re.sub(r'([#!$%^&?*()={}~`\[\]])|([&=#/\.:\-_]+)', r' \1', long_url).split()
+
+        referral_id = "0"
+        if len(tokenized_url) >= 2:
+            if (tokenized_url[len(tokenized_url) - 2] == "status"
+                    and tokenized_url[len(tokenized_url) - 1].isnumeric()):
+                referral_id = tokenized_url[len(tokenized_url) - 1]
+                del tokenized_url[len(tokenized_url) - 1]
+
+        return [w.lower() if (len(w) > 0 and w[0].islower() or w[0] == "#") else w.upper() for w in tokenized_url if
+                w.isascii() and w not in self.stop_words], referral_id
 
     def parse_doc(self, doc_as_list):
         """
@@ -101,15 +96,19 @@ class Parse:
         tweet_id = doc_as_list[0]
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
-        url_tokens = tokenize_url(doc_as_list[3])[0]
+        url_tokens = self.tokenize_url(doc_as_list[3])[0]
         quote_text = doc_as_list[8]
-        quote_url_tokens, referral_id1 = tokenize_url(doc_as_list[9])
-        retweet_url_tokens, referral_id2 = tokenize_url(doc_as_list[6])
+        quote_url_tokens, referral_id1 = self.tokenize_url(doc_as_list[9])
+        retweet_url_tokens, referral_id2 = self.tokenize_url(doc_as_list[6])
         referrals = {referral_id1, referral_id2}
 
         months = {month: index for index, month in enumerate(calendar.month_abbr) if month}
-        split_date = tweet_date.split(' ')
-        tweet_timestamp = int(datetime(int(split_date[5]), months[split_date[1]], int(split_date[2])).timestamp())
+        splitdate = tweet_date.split(' ')
+        hour = int(splitdate[3].split(":")[0])
+        minute = int(splitdate[3].split(":")[1])
+        second = int(splitdate[3].split(":")[2])
+        tweet_timestamp = int(
+            datetime(int(splitdate[5]), months[splitdate[1]], int(splitdate[2]), hour, minute, second).timestamp())
 
         if tweet_id in referrals:
             referrals.remove(tweet_id)
@@ -142,20 +141,7 @@ class Parse:
             tokenized_text.extend(quote_url_tokens)
         if retweet_url_tokens:
             tokenized_text.extend(retweet_url_tokens)
-        """
-        doc_length = len(tokenized_text)  # after text operations.
-        for term in tokenized_text:
-            # temporary solutions
-            if len(term) < 2:
-                continue
-            if term[len(term) - 1] == ".":
-                term = term[0:len(term) - 1]
-            # Cats are good. bay cats => {(Cats ,1)}
-            if term not in term_dict.keys():
-                term_dict[term] = 1
-            else:
-                term_dict[term] += 1
-        """
+
         tweet_length = len(tokenized_text)
         for term in tokenized_text:
             if len(term) < 2:
@@ -182,8 +168,6 @@ class Parse:
             else:
                 entities_dict[entity] += 1
 
-        # document = Document(tweet_id, tweet_date, full_text, url_tokens, retweet_text, retweet_url_tokens, quote_text,
-        #                     quote_url_tokens, term_dict, doc_length)
         document = Document(tweet_id=tweet_id, tweet_timestamp=tweet_timestamp, term_doc_dictionary=term_dict,
                             entities_doc_dictionary=entities_dict, referral_ids=referrals, tweet_length=tweet_length)
         return document

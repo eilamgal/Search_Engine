@@ -14,10 +14,9 @@ class TweetVectorsHandler:
     def __flush_bucket(self, doc_dictionary):
         new_posting = []
         for term in self.bucket.get_dict_terms():
-            #new_posting.append([])
             new_posting.append(self.bucket.get_term_posting(term)[0])
             doc_dictionary[term][5] = (self.bucket_index, len(new_posting) - 1)
-            #new_posting[doc_dictionary[term][5][1]].extend(self.bucket.get_term_posting(term))
+
         self.size = 0
         self.bucket.clean_bucket()
         start_time = time.time()
