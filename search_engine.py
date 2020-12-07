@@ -62,7 +62,7 @@ def run_engine(corpus_path="testData", output_path="posting", stemming=True):
 
     #glove_dict = GloveStrategy("../../../../glove.twitter.27B.25d.txt").embeddings_dict  # Web system
 
-    config = ConfigClass(corpus_path, number_of_term_buckets=10, number_of_entities_buckets=2)
+    config = ConfigClass(corpus_path, number_of_term_buckets=26, number_of_entities_buckets=2)
     r = ReadFile(corpus_path=config.get_corpusPath())
     p = Parse(stemming)
     indexer = Indexer(config)
@@ -122,7 +122,7 @@ def search_and_rank_query(query, inverted_index, k, glove_dict="", tweet_dict=No
 
 
 # def main():
-def main(corpus_path="testData", output_path="posting", stemming=True, queries='', num_docs_to_retrieve=10):
+def main(corpus_path="testData", output_path="posting", stemming=False, queries='', num_docs_to_retrieve=10):
     # run_engine()
     run_engine(corpus_path=corpus_path, output_path=output_path, stemming=stemming)
 
