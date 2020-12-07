@@ -22,7 +22,10 @@ if __name__ == '__main__':
     start = time.time()
 
     results_file = open('results.csv', mode='w', newline='')
-    results_writer = csv.writer(results_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    # results_writer = csv.writer(results_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    fieldnames = ['Query_num', 'Tweet_id', 'Rank']
+    results_writer = csv.DictWriter(results_file, fieldnames=fieldnames)
+    results_writer.writeheader()
 
     for idx, query in enumerate(queries):
         results = search_engine.search_and_rank_query(query, inverted_index, 5, glove_dict, tweet_dict)
@@ -32,6 +35,8 @@ if __name__ == '__main__':
                              + REFERRAL_WEIGHT*result[1][2]
                              + RELEVANCE_WEIGHT*result[1][3])
             print(idx+1, result[0], result[1][4])
-            results_writer.writerow([idx+1, result[0], result[1][4]])
+            # results_writer.writerow([idx+1, result[0], result[1][4]])
+            results_writer.writerow({'Query_num': idx+1, 'Tweet_id': result[0], 'Rank': result[1][4]})
+
     print("Finished after : {0} seconds".format(time.time()-start))
     results_file.close()
