@@ -57,6 +57,7 @@ def get_suffix(num, suffix):
 
 
 CUSTOM_STOPWORDS = ["http", "https", "www", "com", "amp;"]
+STOPWORDS_FOR_URL = ['twitter', 'status', 'web', 'co', 'com', 'il', 'net']
 
 
 class Parse:
@@ -85,7 +86,7 @@ class Parse:
                 del tokenized_url[len(tokenized_url) - 1]
 
         return [w.lower() if (len(w) > 0 and w[0].islower() or w[0] == "#") else w.upper() for w in tokenized_url if
-                w.isascii() and w not in self.stop_words], referral_id
+                w.isascii() and w not in self.stop_words and w not in STOPWORDS_FOR_URL], referral_id
 
     def parse_doc(self, doc_as_list):
         """
@@ -98,10 +99,11 @@ class Parse:
         full_text = doc_as_list[2]
         url_tokens = self.tokenize_url(doc_as_list[3])[0]
         quote_text = doc_as_list[8]
+        # parsing urls
         quote_url_tokens, referral_id1 = self.tokenize_url(doc_as_list[9])
         retweet_url_tokens, referral_id2 = self.tokenize_url(doc_as_list[6])
         referrals = {referral_id1, referral_id2}
-
+        # time parsing
         months = {month: index for index, month in enumerate(calendar.month_abbr) if month}
         splitdate = tweet_date.split(' ')
         hour = int(splitdate[3].split(":")[0])
@@ -109,7 +111,6 @@ class Parse:
         second = int(splitdate[3].split(":")[2])
         tweet_timestamp = int(
             datetime(int(splitdate[5]), months[splitdate[1]], int(splitdate[2]), hour, minute, second).timestamp())
-
         if tweet_id in referrals:
             referrals.remove(tweet_id)
         if referrals == {'0'}:

@@ -58,10 +58,12 @@ class Indexer:
                                                  None]
 
         tweet_vector = numpy.full(25, 0)
-
+        max_tf = 0
         for term in document_dictionary.keys():
             # Update inverted index and posting
             frequency = document_dictionary[term]
+            if frequency > max_tf:
+                max_tf = frequency
             if term in glove_dict.keys():
                 tweet_vector = tweet_vector + (frequency/document.tweet_length) * glove_dict[term]
             if term.lower() not in self.inverted_idx.keys() and term.upper() not in self.inverted_idx.keys():
@@ -79,7 +81,7 @@ class Indexer:
             self.posting_handler.append_term(term, document.tweet_id, frequency, self.inverted_idx)
 
         self.tweet_vectors_handler.append_tweet(document.tweet_id, tweet_vector, self.document_dict)
-
+        self.document_dict[document.tweet_id][3] = max_tf
         if document.referrals_ids:
             for referral in document.referrals_ids:
                 if referral not in self.referrals_counter.keys():
