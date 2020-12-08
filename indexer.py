@@ -52,7 +52,7 @@ class Indexer:
         self.total_tweet_lengths += document.tweet_length
         self.document_dict[document.tweet_id] = [document.tweet_timestamp,
                                                  0,  # referrals
-                                                 len(document_dictionary.keys()) + len(entities_doc_dictionary.keys()),  # unique words
+                                                 len(document_dictionary.keys()) + len(entities_doc_dictionary.keys()),
                                                  -1,
                                                  document.tweet_length,
                                                  None]
@@ -63,7 +63,7 @@ class Indexer:
             # Update inverted index and posting
             frequency = document_dictionary[term]
             if frequency > max_tf:
-                max_tf = frequency
+                max_tf = frequency  # update max idf
             if term in glove_dict.keys():
                 tweet_vector = tweet_vector + (frequency/document.tweet_length) * glove_dict[term]
             if term.lower() not in self.inverted_idx.keys() and term.upper() not in self.inverted_idx.keys():

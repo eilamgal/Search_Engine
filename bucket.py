@@ -3,13 +3,13 @@ class Bucket:
         self.dict = {}
         self.size = 0
 
-    def append_term(self, term, doc_id, frequency):
+    def append_term(self, term, doc_id, frequency):  # insert posting tuple to the bucket
         if term not in self.dict.keys():
             self.dict[term] = []
         self.dict[term].append((doc_id, frequency))
         self.size += 1
 
-    def append_tweet(self, doc_id, vector):
+    def append_tweet(self, doc_id, vector):  # insert glove vector to the bucket
         if doc_id not in self.dict.keys():
             self.dict[doc_id] = []
         self.dict[doc_id].append(vector)
@@ -22,7 +22,7 @@ class Bucket:
         self.dict.clear()
         self.size = 0
 
-    def get_term_posting(self, term):
+    def get_term_posting(self, term):  # return all the data(posting tuples or glove vector of term in list
         if term in self.dict.keys():
             return self.dict[term]
 

@@ -6,7 +6,7 @@ from document import Document
 from nltk import PorterStemmer
 
 
-def parse_hashtags(hashtag):  # problems: USA will translate to  u,s,a and all so
+def parse_hashtags(hashtag):
     if hashtag.find(".") > 0:
         hashtag = hashtag[0:hashtag.find(".")]
     list_of_tokens = [hashtag.lower()]
@@ -77,14 +77,14 @@ class Parse:
         long_url = url[url_split + 3:]
         long_url = long_url[:len(long_url) - 2]
         tokenized_url = re.sub(r'([#!$%^&?*()={}~`\[\]])|([&=#/\.:\-_]+)', r' \1', long_url).split()
-
+        # extract the the tweet id from the url
         referral_id = "0"
         if len(tokenized_url) >= 2:
             if (tokenized_url[len(tokenized_url) - 2] == "status"
                     and tokenized_url[len(tokenized_url) - 1].isnumeric()):
                 referral_id = tokenized_url[len(tokenized_url) - 1]
                 del tokenized_url[len(tokenized_url) - 1]
-
+        # return all the tokens from the url without special stop words of url and stop words
         return [w.lower() if (len(w) > 0 and w[0].islower() or w[0] == "#") else w.upper() for w in tokenized_url if
                 w.isascii() and w not in self.stop_words and w not in STOPWORDS_FOR_URL], referral_id
 
@@ -111,22 +111,13 @@ class Parse:
         second = int(splitdate[3].split(":")[2])
         tweet_timestamp = int(
             datetime(int(splitdate[5]), months[splitdate[1]], int(splitdate[2]), hour, minute, second).timestamp())
+        # referrals
         if tweet_id in referrals:
             referrals.remove(tweet_id)
         if referrals == {'0'}:
             referrals = None
         elif '0' in referrals:
             referrals.remove('0')
-
-        # REDUNDANT PARAMETERS (for now)
-        # url_indices = doc_as_list[4]
-        # retweet_text = doc_as_list[5]
-        # retweet_url_tokens = tokenize_url(doc_as_list[6])
-        # retweet_url_indices = doc_as_list[7]
-        # quote_url_indices = doc_as_list[10]
-        # retweet_quoted_text = doc_as_list[11]
-        # retweet_quoted_url_tokens = tokenize_url(doc_as_list[12])
-        # retweet_quoted_url_indices = doc_as_list[13]
 
         term_dict = {}
 
@@ -135,7 +126,6 @@ class Parse:
             parsed_quote = self.parse_text(quote_text)
             tokenized_text.extend(parsed_quote[0])
             entities.extend(parsed_quote[1])
-
         if url_tokens:
             tokenized_text.extend(url_tokens)
         if quote_url_tokens:
@@ -144,6 +134,7 @@ class Parse:
             tokenized_text.extend(retweet_url_tokens)
 
         tweet_length = len(tokenized_text)
+        # count the frequency of each term
         for term in tokenized_text:
             if len(term) < 2:
                 continue
@@ -160,7 +151,7 @@ class Parse:
                 term_dict[term] += 1
 
         entities_dict = {}
-
+        # frequency of entity
         for entity in entities:
             if len(entity) < 2 or not entity.isascii():
                 continue

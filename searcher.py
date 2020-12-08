@@ -56,10 +56,9 @@ class Searcher:
                 query_vector = query_vector + (1 / len(query)) * glove_dict[term.upper()]
             elif term in glove_dict.keys():
                 query_vector = query_vector + (1 / len(query)) * glove_dict[term.lower]
-
         #posting = utils.load_obj("posting")
         relevant_docs = {} #{doc ID : [0-glove score(some agabric distance), 1-BM25, 2-retweet score, 3-time score(more relevant -> better score)]}
-
+        # put each term in his bucket for less disk reads
         buckets = {}
         for term in query:
             if term not in self.inverted_index.keys():
@@ -73,7 +72,7 @@ class Searcher:
                 buckets[self.inverted_index[term][1][0]] = [term]
             else:
                 buckets[self.inverted_index[term][1][0]].append(term)
-
+        # for each bucket read and go over all the posting list of terms in this bucket
         for bucket in buckets.keys():
             posting = utils.load_obj("bucket" + str(bucket))
             for term in buckets[bucket]:
@@ -84,18 +83,18 @@ class Searcher:
                         term = term.lower()
                     else:
                         continue
-
                 posting_doc = posting[self.inverted_index[term][1][1]]
                 for doc_tuple in posting_doc:
                     doc = doc_tuple[0]
-
+                    # all the meta data on tweet we need for the ranking functions
                     term_freq = self.inverted_index[term][0]
                     tweet_timestamp = self.tweet_dict[doc][0]
                     tweet_referrals = self.tweet_dict[doc][1]
                     tweet_length = self.tweet_dict[doc][4]
                     tweet_vector = self.tweet_dict[doc][5]
-
                     if doc not in relevant_docs.keys():
+                        # if the doc not in relevant doc so we need to insert all the ranking data else just adding
+                        # the BM25 of the term
                         relevant_docs[doc] = [cosine(query_vector, tweet_vector),  # cosine similarity
                                               bm25(corpus_term_frequency=term_freq, tweet_term_frequency=doc_tuple[1],
                                                    avg_tweet_length=self.avg_tweet_length,

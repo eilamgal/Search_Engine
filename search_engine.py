@@ -12,64 +12,21 @@ import glob
 
 def run_engine(corpus_path="testData", output_path="posting", stemming=True):
     """
-    :return:
+    This function build the inverted index over the corpus.
+    send each tweet to parsing and indexing.
+    if the steming is True so the parsing will use stammer on the tokens.
+    :param corpus_path
+    :param output_path for the inverted index
+    :param stemming if True so use stammer on terms
     """
-
-    """
-    # glove_dict = GloveStrategy(
-    #     "C:\\Users\\odedber\\PycharmProjects\\Search_Engine\\glove.twitter.27B.25d.txt").embeddings_dict
-
-    # glove_dict = GloveStrategy(
-    #     "C:\\Users\\eilam gal\\Desktop\\סמסטר\\סמסטר ז\\IR\\glove.twitter.27B.25d.txt").embeddings_dict
-
-    config = ConfigClass(corpus_path, number_of_term_buckets=10, number_of_entities_buckets=2)
-    r = ReadFile(corpus_path=config.get_corpusPath())
-    p = Parse(stemming)
-    indexer = Indexer(config)
-    glove_dict = GloveStrategy("../../../../glove.twitter.27B.25d.txt").embeddings_dict
-    all_files_paths = glob.glob(config.get_corpusPath() + "\\*\\*.snappy.parquet")
-    all_files_names = [file_name[file_name.find("\\") + 1:] for file_name in all_files_paths]
-
-    for file_name in all_files_names:
-        documents_list = [path for path in r.read_file(file_name=file_name)]
-        # Iterate over every document in the file
-        for idx, document in enumerate(documents_list):
-            #  if len(indexer.inverted_index.keys()) % 10000 == 0:
-            #      print(len(indexer.inverted_index.keys()))
-
-            # parse the document
-            # start_time = time.time()
-            parsed_document = p.parse_doc(document)
-            #  print('Finished parsing document after {0} seconds.'.format(time.time() - start_time))
-
-            # index the document data
-            # start_time = time.time()
-            indexer.add_new_doc(parsed_document, glove_dict)
-            # print('Finished indexing document after {0} seconds.'.format(time.time() - start_time))
-
-            number_of_documents += 1
-
-        # print('Finished parsing and indexing after {0} seconds. Starting to export files'
-        #       .format(time.time()-global_start_time))
-        # print(len(indexer.inverted_index.keys()))
-        # print(len(indexer.entities_inverted_idx.keys()))
-        # print("indexer.inverted_index size: " + str(sys.getsizeof(indexer.inverted_index)))
-        # print("indexer.entities_inverted_idx size: " + str(sys.getsizeof(indexer.entities_inverted_idx)))
-        # print("indexer.entities_postingDict size: " + str(sys.getsizeof(indexer.entities_postingDict)))
-    """
-
     glove_dict = GloveStrategy("glove.twitter.27B.25d.txt").embeddings_dict
-
     #glove_dict = GloveStrategy("../../../../glove.twitter.27B.25d.txt").embeddings_dict  # Web system
-
     config = ConfigClass(corpus_path, number_of_term_buckets=26, number_of_entities_buckets=2)
     r = ReadFile(corpus_path=config.get_corpusPath())
     p = Parse(stemming)
     indexer = Indexer(config)
-
     all_files_paths = glob.glob(config.get_corpusPath() + "\\*\\*.snappy.parquet")
     all_files_names = [file_name[file_name.find("\\") + 1:] for file_name in all_files_paths]
-
     start_time = time.time()
     file_counter = 0
     for file_name in all_files_names:
@@ -83,9 +40,8 @@ def run_engine(corpus_path="testData", output_path="posting", stemming=True):
         print("end file number ", file_counter, " in: ", time.time() - file_start_time)
         file_counter += 1
     total_time = time.time() - start_time
-
     indexer.finish_indexing()
-    # print('Finished parsing and indexing after {0} seconds. Starting to export files'.format(total_time))
+    print('Finished parsing and indexing after {0} seconds. Starting to export files'.format(total_time))
 
 
 def load_index():
@@ -94,7 +50,7 @@ def load_index():
     return inverted_index
 
 
-def load_tweet_dict():
+def load_tweet_dict():  # read all the tweet vector files and insert the vectors to the tweet dictionary
     tweet_dict = utils.load_obj("docDictionary")
     buckets = []
     for i in range(tweet_dict["metadata"]["tweet_vector_buckets"]):
@@ -108,21 +64,20 @@ def load_tweet_dict():
 
 
 def search_and_rank_query(query, inverted_index, k, glove_dict="", tweet_dict=None):
+    """
+    This function gets query and return top k tweet that is relevant for the query.
+    first parse the query and then search all relevant tweets for the query in the inverted index
+    """
     p = Parse()
-    start_time = time.time()
     query_as_list, entities = p.parse_text(query)
     full_query = query_as_list + entities
     searcher = Searcher(inverted_index, tweet_dict)
     relevant_docs = searcher.relevant_docs_from_posting(full_query, glove_dict=glove_dict)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
-    # print("IR time: ", time.time() - start_time)
-    start_time = time.time()
     retrive_list = searcher.ranker.retrieve_top_k(ranked_docs, k)
-    # print("time to retrieve_top_k: ", time.time() - start_time)
     return retrive_list
 
 
-# def main():
 def main(corpus_path="testData", output_path="posting", stemming=False, queries='', num_docs_to_retrieve=10):
     # run_engine()
     run_engine(corpus_path=corpus_path, output_path=output_path, stemming=stemming)

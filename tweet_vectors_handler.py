@@ -11,7 +11,7 @@ class TweetVectorsHandler:
         self.size = 0
         self.config = config
 
-    def __flush_bucket(self, doc_dictionary):
+    def __flush_bucket(self, doc_dictionary):  # just write to the desk and clean the bucket
         new_posting = []
         for term in self.bucket.get_dict_terms():
             new_posting.append(self.bucket.get_term_posting(term)[0])
@@ -24,7 +24,7 @@ class TweetVectorsHandler:
         print("glove vector write time: ", time.time()-start_time)
         self.bucket_index += 1
 
-    def append_tweet(self, doc_id, vector, inverted_idx):
+    def append_tweet(self, doc_id, vector, inverted_idx):  # gets tweet vector for insert to the bucket
         self.bucket.append_tweet(doc_id, vector)
         self.size += 1
         if self.size > MAX_SIZE:
