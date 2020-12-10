@@ -79,7 +79,7 @@ def search_and_rank_query(query, inverted_index, k, glove_dict="", tweet_dict=No
 
 
 def main(corpus_path="testData", output_path="posting", stemming=False, queries='', num_docs_to_retrieve=10):
-    run_engine()
+    # run_engine()
     run_engine(corpus_path=corpus_path, output_path=output_path, stemming=stemming)
 
     # start = time.time()

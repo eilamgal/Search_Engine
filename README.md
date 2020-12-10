@@ -18,5 +18,6 @@ To run the the progrem you just need to call main from main.py.
 
 ## Important info:
 ```python
--run_engine method we initialize ConfigClass we to have 26 terms buckets and 2 entities buclers
+-run_engine method we initialize ConfigClass we to have 26 terms buckets and 2 entities buckets
+-only when finish_indexing is calling all the referrals are insert into the inverted index
 ```
