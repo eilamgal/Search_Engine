@@ -22,7 +22,7 @@ class Bucket:
         self.dict.clear()
         self.size = 0
 
-    def get_term_posting(self, term):  # return all the data(posting tuples or glove vector of term in list
+    def get_term_posting(self, term):  # return all the data (posting tuples or glove vector of term in list
         if term in self.dict.keys():
             return self.dict[term]
 

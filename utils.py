@@ -1,5 +1,7 @@
 import pickle
 
+output_path = "posting"
+
 
 def save_obj(obj, name):
     """
@@ -8,6 +10,8 @@ def save_obj(obj, name):
     :param name: name of the pickle file.
     :return: -
     """
+    name = output_path+"\\"+name if output_path != '' else name
+
     with open(name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
@@ -18,13 +22,15 @@ def load_obj(name):
     :param name: name of the pickle file
     :return: loaded pickle file
     """
+    name = output_path+"\\"+name if output_path != '' else name
+
     with open(name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
 
-def load_inverted_index(output_path=None):
-    if output_path:
-        output_path = output_path+"\\inverted_index"
+def load_inverted_index(path=None):
+    if path:
+        path = path + "\\inverted_index"
     else:
-        output_path = "inverted_index"
-    return load_obj(output_path)
+        path = "inverted_index"
+    return load_obj(path)

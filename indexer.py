@@ -92,11 +92,14 @@ class Indexer:
                     self.max_referrals = max(self.referrals_counter[referral], self.max_referrals)
 
     def finish_indexing(self):
+        """
+        Dump the remaining buckets from the memory and save the final inverted index, tweets dictionary and all of the
+        extra metadata to the disk.
+        """
         self.avg_tweet_length = self.total_tweet_lengths / self.number_of_tweets
         self.posting_handler.finish_indexing(self.inverted_idx)
         self.__check_entities()
         self.inverted_idx.update(self.entities_inverted_idx)
-        # this will update all the referrals
         self.__update_referrals()
         self.tweet_vectors_handler.finish_indexing(self.document_dict)
 
@@ -106,6 +109,9 @@ class Indexer:
         utils.save_obj(self.inverted_idx, "inverted_index")
 
     def __check_entities(self):
+        """
+        Clean out potential entities that were found, but did not have a second appearance in the corpus
+        """
         for entity in self.entities_inverted_idx.keys():
             if self.entities_inverted_idx[entity][0] > 1:
                 self.inverted_idx[entity] = self.entities_inverted_idx[entity]
@@ -113,11 +119,18 @@ class Indexer:
         self.entities_inverted_idx.clear()
 
     def __update_referrals(self):
+        """
+        Update every tweet that was indexed to include the number of referrals that were encountered during the indexing
+        of the corpus.
+        """
         for doc_id in self.document_dict.keys():
             if doc_id in self.referrals_counter.keys():
                 self.document_dict[doc_id][1] = self.referrals_counter[doc_id]
 
     def __save_metadata(self):
+        """
+        Add an entry including all important tweets metadata so it could be loaded for later calculations (ranking etc)
+        """
         self.document_dict["metadata"] = {"minTimestamp": self.min_timestamp,
                                           "maxTimestamp": self.max_timestamp,
                                           "avgLength": self.avg_tweet_length,

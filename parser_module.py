@@ -69,6 +69,11 @@ class Parse:
         self.stem = stemming
 
     def tokenize_url(self, url):
+        """
+        Gets a url and extracts informational tokens and tweet number as referral ids (retweets of others)
+        :param url: a url string
+        :return: url tokens, referral ids (if there were any)
+        """
         if url == "{}" or url is None:
             return None, "0"
         url_split = url.find("\":\"")
@@ -84,14 +89,15 @@ class Parse:
                     and tokenized_url[len(tokenized_url) - 1].isnumeric()):
                 referral_id = tokenized_url[len(tokenized_url) - 1]
                 del tokenized_url[len(tokenized_url) - 1]
+
         # return all the tokens from the url without special stop words of url and stop words
         return [w.lower() if (len(w) > 0 and w[0].islower() or w[0] == "#") else w.upper() for w in tokenized_url if
                 w.isascii() and w not in self.stop_words and w not in STOPWORDS_FOR_URL], referral_id
 
     def parse_doc(self, doc_as_list):
         """
-        This function takes a tweet document as list and break it into different fields
-        :param doc_as_list: list re-preseting the tweet.
+        This function takes a tweet document as list and parses it to extract the relevant fields
+        :param doc_as_list: a list representing one tweet fields.
         :return: Document object with corresponding fields.
         """
         tweet_id = doc_as_list[0]
@@ -103,6 +109,7 @@ class Parse:
         quote_url_tokens, referral_id1 = self.tokenize_url(doc_as_list[9])
         retweet_url_tokens, referral_id2 = self.tokenize_url(doc_as_list[6])
         referrals = {referral_id1, referral_id2}
+
         # time parsing
         months = {month: index for index, month in enumerate(calendar.month_abbr) if month}
         splitdate = tweet_date.split(' ')
@@ -165,6 +172,11 @@ class Parse:
         return document
 
     def parse_text(self, text):
+        """
+        Parse a string and return the relevant tokens and entities found in it
+        :param text: text to parse
+        :return: tokenized words/ hashtags / number etc, and potential entities that were extracted
+        """
         if not text:
             return
         tokens_list = []

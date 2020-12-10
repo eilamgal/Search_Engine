@@ -5,6 +5,10 @@ MAX_SIZE = 1000000
 
 
 class TweetVectorsHandler:
+    """
+    Similar to the postings_handler, but simpler - builds a dictionary for tweets and their average Glove vectors
+    and dumps them to the disk once MAX_SIZE is reached in memory.
+    """
     def __init__(self, config, first_bucket_index=0):
         self.bucket = Bucket()
         self.bucket_index = first_bucket_index
@@ -21,7 +25,7 @@ class TweetVectorsHandler:
         self.bucket.clean_bucket()
         start_time = time.time()
         utils.save_obj(new_posting, "avgVector" + str(self.bucket_index))
-        print("glove vector write time: ", time.time()-start_time)
+        # print("glove vector write time: ", time.time()-start_time)
         self.bucket_index += 1
 
     def append_tweet(self, doc_id, vector, inverted_idx):  # gets tweet vector for insert to the bucket
