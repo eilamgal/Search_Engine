@@ -82,6 +82,7 @@ class Indexer:
 
         self.tweet_vectors_handler.append_tweet(document.tweet_id, tweet_vector, self.document_dict)
         self.document_dict[document.tweet_id][3] = max_tf
+        # insert to referrals dictionary
         if document.referrals_ids:
             for referral in document.referrals_ids:
                 if referral not in self.referrals_counter.keys():
@@ -95,6 +96,7 @@ class Indexer:
         self.posting_handler.finish_indexing(self.inverted_idx)
         self.__check_entities()
         self.inverted_idx.update(self.entities_inverted_idx)
+        # this will update all the referrals
         self.__update_referrals()
         self.tweet_vectors_handler.finish_indexing(self.document_dict)
 

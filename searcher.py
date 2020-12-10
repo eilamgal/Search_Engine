@@ -56,7 +56,6 @@ class Searcher:
                 query_vector = query_vector + (1 / len(query)) * glove_dict[term.upper()]
             elif term in glove_dict.keys():
                 query_vector = query_vector + (1 / len(query)) * glove_dict[term.lower]
-        #posting = utils.load_obj("posting")
         relevant_docs = {} #{doc ID : [0-glove score(some agabric distance), 1-BM25, 2-retweet score, 3-time score(more relevant -> better score)]}
         # put each term in his bucket for less disk reads
         buckets = {}
