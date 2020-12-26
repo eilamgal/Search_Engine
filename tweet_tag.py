@@ -56,13 +56,14 @@ for dir in os.listdir(data_path):
                         print("please enter a valid number")
                 tweet_annotation_dict[int(tweet[0])] = annotation
                 tweet_num += 1
+                if not start_from_backup and tweet_num % 10 == 0:
+                    with open("backup_file.pkl", 'wb') as f:
+                        backup = []
+                        backup.append(tweet_annotation_dict)
+                        backup.append(tweet_num)
+                        pickle.dump(backup, f)
                 print("\n")
-            if not start_from_backup and tweet_num % 10 == 0:
-                with open("backup_file.pkl", 'wb') as f:
-                    backup = []
-                    backup.append(tweet_annotation_dict)
-                    backup.append(tweet_num)
-                    pickle.dump(backup, f)
+
 
 tweet_annotation_df = pd.DataFrame.from_dict(tweet_annotation_dict.items())
 tweet_annotation_df.rename(columns={0: "tweet", 1: "label"}, inplace=True)
