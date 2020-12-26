@@ -147,7 +147,7 @@ test_value(precision_at_n, 0, [df, 3, 1])
 test_value(map, 2 / 3, [df])
 for res in results:
     print(res)
-my_df = pd.read_csv("C:\\Users\\eilam gal\\Search_Engine\\305786451.csv")
+my_df = pd.read_csv("/305786451.csv")
 print(precision(my_df,True,1))
 print(precision(my_df,True,2))
 print(precision(my_df,False,None))
