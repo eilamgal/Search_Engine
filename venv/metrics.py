@@ -147,3 +147,19 @@ test_value(precision_at_n, 0, [df, 3, 1])
 test_value(map, 2 / 3, [df])
 for res in results:
     print(res)
+my_df = pd.read_csv("C:\\Users\\eilam gal\\Search_Engine\\305786451.csv")
+print(precision(my_df,True,1))
+print(precision(my_df,True,2))
+print(precision(my_df,False,None))
+print(precision_at_n(my_df,12,7))
+print(precision_at_n(my_df,12,8))
+print(precision_at_n(my_df,3,4))
+print()
+print(recall(my_df, {12:30}))
+print(recall(my_df, {25:9}))
+print(recall(my_df, {32:100}))
+print(recall(my_df, {12:30, 25:9, 32:100}))
+print(map(my_df))
+
+
+
