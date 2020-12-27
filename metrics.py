@@ -1,8 +1,5 @@
 import traceback
-
 import pandas as pd
-from functools import reduce
-import numpy
 
 df = pd.DataFrame(
     {'query': [1, 1, 2, 2, 3], 'Tweet_id': [12345, 12346, 12347, 12348, 12349],
@@ -105,7 +102,6 @@ def precision_at_n(df, query_number=1, n=5):
     return sum(df["label"][querys_result_dict[query_number][0]: querys_result_dict[query_number][n-1]+1])/n
 
 
-
 # map(df) == 2/3
 def map(df):
     """
@@ -127,7 +123,6 @@ def map(df):
                     avg_precision += precision_at_n(df, query, n)/total_relevante_amuont
         result += avg_precision/len(querys_result_dict.keys())
     return result
-
 
 
 def test_value(func, expected, variables):
