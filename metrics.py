@@ -1,3 +1,5 @@
+import traceback
+
 import pandas as pd
 from functools import reduce
 import numpy
@@ -30,12 +32,12 @@ def precision(df, single=False, query_number=None):
         :param query_number: Integer/None that tell on what query_number to evaluate precision or None for the entire DataFrame
         :return: Double - The precision
     """
-    query_index=0
-    last_query_index=len(df["query"])
+    query_index = 0
+    last_query_index = len(df["query"])
     if single:
         try:
-            query_index=df["query"].tolist().index(query_number)
-            last_query_index=len(df["query"]) - df["query"].tolist()[::-1].index(query_number)
+            query_index = df["query"].tolist().index(query_number)
+            last_query_index = len(df["query"]) - df["query"].tolist()[::-1].index(query_number)
         except:
             print("invalid query index")
             return -1
@@ -67,10 +69,14 @@ def recall(df, num_of_relevant):
     """
     querys_result_dict = get_query_dict(df)
     result = 0
+    n = 0
     for query in num_of_relevant.keys():
-        true_positve= sum(df["label"][querys_result_dict[query][0]: querys_result_dict[query][-1]+1])
-        result += true_positve/num_of_relevant[query]
-    return result/len(num_of_relevant.keys())
+        if num_of_relevant[query] == 0:
+            continue
+        true_positive = sum(df["label"][querys_result_dict[query][0]: querys_result_dict[query][-1]+1])
+        result += true_positive/num_of_relevant[query]
+        n += 1
+    return result/n
 
 
 # precision_at_n(df, 1, 2) == 0.5
@@ -83,6 +89,8 @@ def precision_at_n(df, query_number=1, n=5):
         :param n: Total document to splice from the df
         :return: Double: The precision of those n documents
     """
+    if n == 0:
+        return 0
     querys_result_dict = get_query_dict(df) # {1: [0,1], 2: [2, 3], 3:[4]}  df["label] = [1, 0, 1, 1, 0]
     if query_number < 1 or query_number not in querys_result_dict.keys() or n > len(querys_result_dict[query_number]):
         print("invalid query index")
@@ -147,19 +155,6 @@ test_value(precision_at_n, 0, [df, 3, 1])
 test_value(map, 2 / 3, [df])
 for res in results:
     print(res)
-my_df = pd.read_csv("/305786451.csv")
-print(precision(my_df,True,1))
-print(precision(my_df,True,2))
-print(precision(my_df,False,None))
-print(precision_at_n(my_df,12,7))
-print(precision_at_n(my_df,12,8))
-print(precision_at_n(my_df,3,4))
-print()
-print(recall(my_df, {12:30}))
-print(recall(my_df, {25:9}))
-print(recall(my_df, {32:100}))
-print(recall(my_df, {12:30, 25:9, 32:100}))
-print(map(my_df))
 
 
 
