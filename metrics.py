@@ -124,7 +124,6 @@ def map(df):
             for i in querys_result_dict[query]:
                 n += 1
                 if df["label"][i] == 1:
-                    x = precision_at_n(df, query, n)
                     avg_precision += precision_at_n(df, query, n)/total_relevante_amuont
         result += avg_precision/len(querys_result_dict.keys())
     return result
