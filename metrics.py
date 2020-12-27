@@ -6,8 +6,12 @@ import numpy
 
 df = pd.DataFrame(
     {'query': [1, 1, 2, 2, 3], 'Tweet_id': [12345, 12346, 12347, 12348, 12349],
-     'label': [1, 0, 1, 1, 0]})
-
+     'label': [1, 0, 1, 1, 0]}) # [0,1 ,1, 0, 1] ,[3,2,2,1,1]
+"""
+df = pd.DataFrame(
+    {'query': [3, 2, 2, 1, 1], 'Tweet_id': [12345, 12346, 12347, 12348, 12349],
+     'label': [0 ,1 ,1 , 0, 1]})  # [0,1 ,1, 0, 1] ,[3,2,2,1,1]
+"""
 test_number = 0
 results = []
 
@@ -32,6 +36,7 @@ def precision(df, single=False, query_number=None):
         :param query_number: Integer/None that tell on what query_number to evaluate precision or None for the entire DataFrame
         :return: Double - The precision
     """
+    df = df.sort_values("query")
     query_index = 0
     last_query_index = len(df["query"])
     if single:
@@ -67,6 +72,7 @@ def recall(df, num_of_relevant):
         :param num_of_relevant: Dictionary: number of relevant tweets for each query number. keys are the query number and values are the number of relevant.
         :return: Double - The recall
     """
+    df = df.sort_values("query")
     querys_result_dict = get_query_dict(df)
     result = 0
     n = 0
@@ -89,6 +95,7 @@ def precision_at_n(df, query_number=1, n=5):
         :param n: Total document to splice from the df
         :return: Double: The precision of those n documents
     """
+    df = df.sort_values("query")
     if n == 0:
         return 0
     querys_result_dict = get_query_dict(df) # {1: [0,1], 2: [2, 3], 3:[4]}  df["label] = [1, 0, 1, 1, 0]
@@ -106,16 +113,19 @@ def map(df):
         :param df: DataFrame: Contains query numbers, tweet ids, and label
         :return: Double: the average precision of the df
     """
+    df = df.sort_values("query")
     querys_result_dict = get_query_dict(df)  # {1: [0,1], 2: [2, 3], 3:[4]}
     result = 0
     for query in querys_result_dict.keys():
         avg_precision = 0
         total_relevante_amuont = sum(df["label"][querys_result_dict[query][0]: querys_result_dict[query][-1]+1])
         n = 0
-        for i in querys_result_dict[query]:
-            n += 1
-            if df["label"][i] == 1:
-                avg_precision += precision_at_n(df, query, n)/total_relevante_amuont
+        if total_relevante_amuont != 0:
+            for i in querys_result_dict[query]:
+                n += 1
+                if df["label"][i] == 1:
+                    x = precision_at_n(df, query, n)
+                    avg_precision += precision_at_n(df, query, n)/total_relevante_amuont
         result += avg_precision/len(querys_result_dict.keys())
     return result
 
